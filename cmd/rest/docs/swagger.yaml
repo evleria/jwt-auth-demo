@@ -1,0 +1,13 @@
+info:
+  contact: {}
+  title: JWT Auth Demo Project
+paths:
+  /:
+    get:
+      responses:
+        "200":
+          description: Hello
+          schema:
+            type: string
+      summary: Prints hello
+swagger: "2.0"

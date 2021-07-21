@@ -1,0 +1,22 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "title": "JWT Auth Demo Project",
+        "contact": {}
+    },
+    "paths": {
+        "/": {
+            "get": {
+                "summary": "Prints hello",
+                "responses": {
+                    "200": {
+                        "description": "Hello",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

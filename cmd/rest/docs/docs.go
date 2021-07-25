@@ -26,6 +26,9 @@ var doc = `{
     "paths": {
         "/auth/register": {
             "post": {
+                "tags": [
+                    "Auth"
+                ],
                 "summary": "Register a new user",
                 "parameters": [
                     {
@@ -45,13 +48,13 @@ var doc = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/auth.DefaultHttpError"
+                            "$ref": "#/definitions/controller.DefaultHttpError"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/auth.DefaultHttpError"
+                            "$ref": "#/definitions/controller.DefaultHttpError"
                         }
                     }
                 }
@@ -59,14 +62,6 @@ var doc = `{
         }
     },
     "definitions": {
-        "auth.DefaultHttpError": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string"
-                }
-            }
-        },
         "auth.RegisterRequest": {
             "type": "object",
             "required": [
@@ -86,6 +81,14 @@ var doc = `{
                     "type": "string"
                 },
                 "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "controller.DefaultHttpError": {
+            "type": "object",
+            "properties": {
+                "message": {
                     "type": "string"
                 }
             }

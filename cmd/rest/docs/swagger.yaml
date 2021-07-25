@@ -1,9 +1,4 @@
 definitions:
-  auth.DefaultHttpError:
-    properties:
-      message:
-        type: string
-    type: object
   auth.RegisterRequest:
     properties:
       email:
@@ -19,6 +14,11 @@ definitions:
     - firstName
     - lastName
     - password
+    type: object
+  controller.DefaultHttpError:
+    properties:
+      message:
+        type: string
     type: object
 info:
   contact: {}
@@ -39,10 +39,12 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/auth.DefaultHttpError'
+            $ref: '#/definitions/controller.DefaultHttpError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/auth.DefaultHttpError'
+            $ref: '#/definitions/controller.DefaultHttpError'
       summary: Register a new user
+      tags:
+      - Auth
 swagger: "2.0"

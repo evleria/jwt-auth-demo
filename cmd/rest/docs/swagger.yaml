@@ -2,7 +2,7 @@ info:
   contact: {}
   title: JWT Auth Demo Project
 paths:
-  /:
+  /auth/hello:
     get:
       responses:
         "200":

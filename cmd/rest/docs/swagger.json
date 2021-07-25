@@ -5,7 +5,7 @@
         "contact": {}
     },
     "paths": {
-        "/": {
+        "/auth/hello": {
             "get": {
                 "summary": "Prints hello",
                 "responses": {

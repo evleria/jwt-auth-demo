@@ -24,7 +24,7 @@ var doc = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/": {
+        "/auth/hello": {
             "get": {
                 "summary": "Prints hello",
                 "responses": {

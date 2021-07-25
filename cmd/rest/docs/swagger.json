@@ -5,16 +5,69 @@
         "contact": {}
     },
     "paths": {
-        "/auth/hello": {
-            "get": {
-                "summary": "Prints hello",
-                "responses": {
-                    "200": {
-                        "description": "Hello",
+        "/auth/register": {
+            "post": {
+                "summary": "Register a new user",
+                "parameters": [
+                    {
+                        "description": "Registration information",
+                        "name": "registerData",
+                        "in": "body",
+                        "required": true,
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/auth.RegisterRequest"
                         }
                     }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/auth.DefaultHttpError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/auth.DefaultHttpError"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "auth.DefaultHttpError": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "auth.RegisterRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "firstName",
+                "lastName",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "firstName": {
+                    "type": "string"
+                },
+                "lastName": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
                 }
             }
         }

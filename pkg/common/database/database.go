@@ -7,6 +7,7 @@ import (
 )
 
 type Database interface {
+	Exec(sql string, args ...interface{}) (int64, error)
 }
 
 type database struct {
@@ -29,4 +30,9 @@ func New(ctx context.Context, connString string) (Database, error) {
 		ctx:  ctx,
 		conn: conn,
 	}, nil
+}
+
+func (p *database) Exec(sql string, args ...interface{}) (int64, error) {
+	result, err := p.conn.Exec(p.ctx, sql, args...)
+	return result.RowsAffected(), err
 }

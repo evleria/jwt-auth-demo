@@ -8,6 +8,7 @@ import (
 
 type Controller interface {
 	Register(context echo.Context) error
+	Login(context echo.Context) error
 }
 
 type controller struct {
@@ -24,7 +25,7 @@ func NewController(service Service) Controller {
 
 // Register godoc
 // @Tags Auth
-// @Summary Register a new user
+// @Summary Registers a new user
 // @Param registerData body RegisterRequest true "Registration information"
 // @Success 201 "Created"
 // @Failure 400 {object} ctrl.DefaultHttpError
@@ -47,4 +48,35 @@ func (c *controller) Register(ctx echo.Context) error {
 	}
 
 	return ctx.NoContent(http.StatusCreated)
+}
+
+// Login godoc
+// @Tags Auth
+// @Summary Logins a user
+// @Param loginData body LoginRequest true "Login information"
+// @Success 200 {object} LoginResponse
+// @Failure 400 {object} ctrl.DefaultHttpError
+// @Failure 500 {object} ctrl.DefaultHttpError
+// @Router /auth/login [post]
+func (c *controller) Login(ctx echo.Context) error {
+	request := new(LoginRequest)
+	err := ctx.Bind(request)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest)
+	}
+	err = c.Validate(request)
+	if err != nil {
+		return err
+	}
+	accessToken, refreshToken, err := c.service.Login(request.Email, request.Password)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError)
+	}
+
+	response := &LoginResponse{
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+	}
+
+	return ctx.JSON(http.StatusOK, response)
 }

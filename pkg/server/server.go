@@ -37,7 +37,7 @@ func (s *server) initRoutes() {
 	engine := s.webserver.Engine()
 	engine.Use(middleware.Logger())
 
-	auth.AddRoutes(
+	auth.AddModule(
 		engine.Group("/auth"),
 		s.db)
 

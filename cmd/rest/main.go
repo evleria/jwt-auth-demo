@@ -6,8 +6,10 @@ import (
 	"fmt"
 	"github.com/evleria/jwt-auth-demo/pkg/common/config"
 	"github.com/evleria/jwt-auth-demo/pkg/common/database"
+	"github.com/evleria/jwt-auth-demo/pkg/common/kvstore"
 	"github.com/evleria/jwt-auth-demo/pkg/common/webserver"
 	"github.com/evleria/jwt-auth-demo/pkg/server"
+	"github.com/go-redis/redis/v8"
 	"log"
 )
 
@@ -29,23 +31,27 @@ func main() {
 		log.Println(err)
 	}
 
-	dbUrl := GetPostgresConnectionString()
+	dbUrl := getPostgresConnectionString()
 
 	db, err := database.New(ctx, dbUrl)
-	if err != nil {
-		log.Fatal(err)
-	}
+	check(err)
+
+	kvstore, err := kvstore.New(ctx, &redis.Options{
+		Addr:     getRedisAddress(),
+		Password: config.GetString("REDIS_PASSWORD", ""),
+	})
+	check(err)
 
 	webserver := webserver.New()
 
-	server := server.New(webserver, db, server.Config{
+	server := server.New(webserver, db, kvstore, server.Config{
 		Port: config.GetInt("PORT", 5000),
 	})
 
-	log.Fatal(server.Listen())
+	check(server.Listen())
 }
 
-func GetPostgresConnectionString() string {
+func getPostgresConnectionString() string {
 	conn := fmt.Sprintf("postgres://%s:%s@%s:%d/%s",
 		config.GetString("POSTGRES_USER", "postgres"),
 		config.GetString("POSTGRES_PASSWORD", ""),
@@ -59,4 +65,17 @@ func GetPostgresConnectionString() string {
 	}
 
 	return conn
+}
+
+func getRedisAddress() string {
+	return fmt.Sprintf("%s:%d",
+		config.GetString("REDIS_HOST", "localhost"),
+		config.GetInt("REDIS_PORT", 6379),
+	)
+}
+
+func check(err error) {
+	if err != nil {
+		log.Fatal(err)
+	}
 }

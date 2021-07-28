@@ -16,6 +16,16 @@ definitions:
       refreshToken:
         type: string
     type: object
+  auth.RefreshRequest:
+    properties:
+      refreshToken:
+        type: string
+    type: object
+  auth.RefreshResponse:
+    properties:
+      accessToken:
+        type: string
+    type: object
   auth.RegisterRequest:
     properties:
       email:
@@ -64,6 +74,31 @@ paths:
           schema:
             $ref: '#/definitions/controller.DefaultHttpError'
       summary: Logins a user
+      tags:
+      - Auth
+  /auth/refresh:
+    post:
+      parameters:
+      - description: Refresh information
+        in: body
+        name: refreshData
+        required: true
+        schema:
+          $ref: '#/definitions/auth.RefreshRequest'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/auth.RefreshResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controller.DefaultHttpError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controller.DefaultHttpError'
+      summary: Refresh a user
       tags:
       - Auth
   /auth/register:

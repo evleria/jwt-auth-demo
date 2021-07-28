@@ -9,6 +9,7 @@ import (
 type Controller interface {
 	Register(context echo.Context) error
 	Login(context echo.Context) error
+	Refresh(context echo.Context) error
 }
 
 type controller struct {
@@ -78,5 +79,31 @@ func (c *controller) Login(ctx echo.Context) error {
 		RefreshToken: refreshToken,
 	}
 
+	return ctx.JSON(http.StatusOK, response)
+}
+
+// Refresh godoc
+// @Tags Auth
+// @Summary Refresh a user
+// @Param refreshData body RefreshRequest true "Refresh information"
+// @Success 200 {object} RefreshResponse
+// @Failure 400 {object} ctrl.DefaultHttpError
+// @Failure 500 {object} ctrl.DefaultHttpError
+// @Router /auth/refresh [post]
+func (c *controller) Refresh(ctx echo.Context) error {
+	request := new(RefreshRequest)
+	err := ctx.Bind(request)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest)
+	}
+
+	accessToken, err := c.service.Refresh(request.RefreshToken)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError)
+	}
+
+	response := RefreshResponse{
+		AccessToken: accessToken,
+	}
 	return ctx.JSON(http.StatusOK, response)
 }

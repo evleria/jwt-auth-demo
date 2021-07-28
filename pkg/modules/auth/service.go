@@ -3,25 +3,28 @@ package auth
 import (
 	"errors"
 	"fmt"
-	jwtgo "github.com/dgrijalva/jwt-go"
 	"github.com/evleria/jwt-auth-demo/pkg/common/bcrypt"
 	"github.com/evleria/jwt-auth-demo/pkg/common/jwt"
+	"time"
 )
 
 type Service interface {
 	Register(firstName, lastName, email, password string) error
 	Login(email, password string) (string, string, error)
+	Refresh(refreshToken string) (string, error)
 }
 
 type service struct {
-	repository Repository
-	jwtMaker   jwt.Maker
+	userRepository  UserRepository
+	tokenRepository TokenRepository
+	jwtMaker        jwt.Maker
 }
 
-func NewService(repository Repository, jwtMaker jwt.Maker) Service {
+func NewService(userRepository UserRepository, tokenRepository TokenRepository, jwtMaker jwt.Maker) *service {
 	return &service{
-		repository: repository,
-		jwtMaker:   jwtMaker,
+		userRepository:  userRepository,
+		tokenRepository: tokenRepository,
+		jwtMaker:        jwtMaker,
 	}
 }
 
@@ -31,7 +34,7 @@ func (s *service) Register(firstName, lastName, email, password string) error {
 		return fmt.Errorf("cannot register: %v", err)
 	}
 
-	err = s.repository.CreateNewUser(firstName, lastName, email, hash)
+	err = s.userRepository.CreateNewUser(firstName, lastName, email, hash)
 	if err != nil {
 		return errors.New("cannot register a new user")
 	}
@@ -39,7 +42,7 @@ func (s *service) Register(firstName, lastName, email, password string) error {
 }
 
 func (s *service) Login(email, password string) (string, string, error) {
-	user, err := s.repository.GetUserByEmail(email)
+	user, err := s.userRepository.GetUserByEmail(email)
 	if err != nil {
 		return "", "", errors.New("cannot find user")
 	}
@@ -48,20 +51,45 @@ func (s *service) Login(email, password string) (string, string, error) {
 		return "", "", errors.New("invalid password provided")
 	}
 
-	accessToken, err := s.jwtMaker.GenerateAccessToken(jwtgo.MapClaims{
-		"sub":   user.Id,
-		"email": user.Email,
-	})
+	accessToken, err := s.jwtMaker.GenerateAccessToken(user.Id, user.Email)
 	if err != nil {
 		return "", "", errors.New("cannot generate access token")
 	}
 
-	refreshToken, err := s.jwtMaker.GenerateRefreshToken(jwtgo.MapClaims{
-		"sub": user.Id,
-	})
+	refreshToken, err := s.jwtMaker.GenerateRefreshToken(user.Id)
 	if err != nil {
 		return "", "", errors.New("cannot generate refresh token")
 	}
 
 	return accessToken, refreshToken, nil
+}
+
+func (s *service) Refresh(refreshToken string) (string, error) {
+	claims, err := s.jwtMaker.VerifyRefreshToken(refreshToken)
+	if err != nil {
+		return "", err
+	}
+
+	userId := int(claims["sub"].(float64))
+	t, inBlacklist, err := s.tokenRepository.IsBlacklisted(userId)
+	if err != nil {
+		return "", err
+	}
+	if inBlacklist {
+		iat := time.Unix(int64(claims["iat"].(int)), 0)
+		if t.After(iat) {
+			return "", errors.New("token is blacklisted")
+		}
+	}
+
+	user, err := s.userRepository.GetUserById(userId)
+	if err != nil {
+		return "", errors.New("cannot find user")
+	}
+
+	accessToken, err := s.jwtMaker.GenerateAccessToken(user.Id, user.Email)
+	if err != nil {
+		return "", errors.New("cannot generate access token")
+	}
+	return accessToken, err
 }

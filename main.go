@@ -4,7 +4,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"github.com/evleria/jwt-auth-demo/internal/common/config"
+	"github.com/evleria/jwt-auth-demo/internal/config"
 	"github.com/evleria/jwt-auth-demo/internal/server"
 	"github.com/go-redis/redis/v8"
 	"github.com/jackc/pgx/v4"

@@ -1,17 +1,23 @@
-package auth
+package repositories
 
 import (
 	"context"
 	"github.com/jackc/pgx/v4"
 )
 
-type (
-	UserRepository interface {
-		CreateNewUser(firstName, lastName, email, hash string) error
-		GetUserByEmail(email string) (*User, error)
-		GetUserById(id int) (*User, error)
-	}
-)
+type UserRepository interface {
+	CreateNewUser(firstName, lastName, email, hash string) error
+	GetUserByEmail(email string) (*User, error)
+	GetUserById(id int) (*User, error)
+}
+
+type User struct {
+	Id        int    `db:"id"`
+	FirstName string `db:"first_name"`
+	LastName  string `db:"last_name"`
+	Email     string `db:"email"`
+	PassHash  string `db:"pass_hash"`
+}
 
 type userRepository struct {
 	db *pgx.Conn

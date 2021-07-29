@@ -1,34 +1,35 @@
-package auth
+package services
 
 import (
 	"errors"
 	"fmt"
 	"github.com/evleria/jwt-auth-demo/internal/common/bcrypt"
 	"github.com/evleria/jwt-auth-demo/internal/common/jwt"
+	"github.com/evleria/jwt-auth-demo/internal/repositories"
 	"time"
 )
 
-type Service interface {
+type AuthService interface {
 	Register(firstName, lastName, email, password string) error
 	Login(email, password string) (string, string, error)
 	Refresh(refreshToken string) (string, error)
 }
 
-type service struct {
-	userRepository  UserRepository
-	tokenRepository TokenRepository
+type authService struct {
+	userRepository  repositories.UserRepository
+	tokenRepository repositories.TokenRepository
 	jwtMaker        jwt.Maker
 }
 
-func NewService(userRepository UserRepository, tokenRepository TokenRepository, jwtMaker jwt.Maker) *service {
-	return &service{
+func NewAuthService(userRepository repositories.UserRepository, tokenRepository repositories.TokenRepository, jwtMaker jwt.Maker) *authService {
+	return &authService{
 		userRepository:  userRepository,
 		tokenRepository: tokenRepository,
 		jwtMaker:        jwtMaker,
 	}
 }
 
-func (s *service) Register(firstName, lastName, email, password string) error {
+func (s *authService) Register(firstName, lastName, email, password string) error {
 	hash, err := bcrypt.Hash(password)
 	if err != nil {
 		return fmt.Errorf("cannot register: %v", err)
@@ -41,7 +42,7 @@ func (s *service) Register(firstName, lastName, email, password string) error {
 	return nil
 }
 
-func (s *service) Login(email, password string) (string, string, error) {
+func (s *authService) Login(email, password string) (string, string, error) {
 	user, err := s.userRepository.GetUserByEmail(email)
 	if err != nil {
 		return "", "", errors.New("cannot find user")
@@ -64,7 +65,7 @@ func (s *service) Login(email, password string) (string, string, error) {
 	return accessToken, refreshToken, nil
 }
 
-func (s *service) Refresh(refreshToken string) (string, error) {
+func (s *authService) Refresh(refreshToken string) (string, error) {
 	claims, err := s.jwtMaker.VerifyRefreshToken(refreshToken)
 	if err != nil {
 		return "", err

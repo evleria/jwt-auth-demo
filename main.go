@@ -33,20 +33,18 @@ func main() {
 	db, err := pgx.Connect(context.Background(), dbUrl)
 	check(err)
 
-	redis := redis.NewClient(&redis.Options{
+	redisClient := redis.NewClient(&redis.Options{
 		Addr:     getRedisAddress(),
 		Password: config.GetString("REDIS_PASSWORD", ""),
 	})
-	_, err = redis.Ping(context.TODO()).Result()
+	_, err = redisClient.Ping(context.TODO()).Result()
 	check(err)
 
 	e := echo.New()
 
-	server := server.New(e, db, redis, server.Config{
-		Port: config.GetInt("PORT", 5000),
-	})
+	srv := server.New(e, db, redisClient)
 
-	check(server.Listen())
+	check(srv.Listen(config.GetInt("PORT", 5000)))
 }
 
 func getPostgresConnectionString() string {

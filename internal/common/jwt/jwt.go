@@ -2,6 +2,7 @@ package jwt
 
 import (
 	"errors"
+	"github.com/evleria/jwt-auth-demo/internal/config"
 	"time"
 
 	jwtgo "github.com/dgrijalva/jwt-go"
@@ -15,12 +16,18 @@ type Maker interface {
 }
 
 type maker struct {
-	config MakerConfig
+	accessTokenSecret    string
+	accessTokenDuration  time.Duration
+	refreshTokenSecret   string
+	refreshTokenDuration time.Duration
 }
 
-func NewJwtMaker(config MakerConfig) Maker {
+func NewJwtMakerFromConfig() Maker {
 	return &maker{
-		config: config,
+		accessTokenSecret:    config.GetString("ACCESS_TOKEN_SECRET", "access_secret"),
+		accessTokenDuration:  config.GetDuration("ACCESS_TOKEN_DURATION", time.Minute*5),
+		refreshTokenSecret:   config.GetString("REFRESH_TOKEN_SECRET", "refresh_secret"),
+		refreshTokenDuration: config.GetDuration("REFRESH_TOKEN_DURATION", time.Hour*24*7),
 	}
 }
 
@@ -28,21 +35,25 @@ func (m *maker) GenerateAccessToken(userId int, email string) (string, error) {
 	return m.generateJwt(jwtgo.MapClaims{
 		"sub":   userId,
 		"email": email,
-	}, m.config.AccessTokenDuration, m.config.AccessTokenSecret)
+	}, m.accessTokenDuration, m.accessTokenSecret)
 }
 
 func (m *maker) GenerateRefreshToken(userId int) (string, error) {
 	return m.generateJwt(jwtgo.MapClaims{
 		"sub": userId,
-	}, m.config.RefreshTokenDuration, m.config.RefreshTokenSecret)
+	}, m.refreshTokenDuration, m.refreshTokenSecret)
 }
 
 func (m *maker) VerifyRefreshToken(refreshToken string) (jwtgo.MapClaims, error) {
-	return m.verifyJwt(refreshToken, m.config.RefreshTokenSecret)
+	return m.verifyJwt(refreshToken, m.refreshTokenSecret)
 }
 
 func (m *maker) generateJwt(claims jwtgo.MapClaims, exp time.Duration, secret string) (string, error) {
-	id, _ := gonanoid.New()
+	id, err := gonanoid.New()
+	if err != nil {
+		return "", err
+	}
+
 	now := time.Now()
 
 	claims["id"] = id

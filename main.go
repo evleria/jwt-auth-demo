@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"github.com/evleria/jwt-auth-demo/internal/common/config"
 	"github.com/evleria/jwt-auth-demo/internal/common/database"
-	"github.com/evleria/jwt-auth-demo/internal/common/webserver"
 	"github.com/evleria/jwt-auth-demo/internal/server"
 	"github.com/go-redis/redis/v8"
+	"github.com/labstack/echo/v4"
 	"log"
 )
 
@@ -42,9 +42,9 @@ func main() {
 	_, err = redis.Ping(ctx).Result()
 	check(err)
 
-	webserver := webserver.New()
+	e := echo.New()
 
-	server := server.New(webserver, db, redis, server.Config{
+	server := server.New(e, db, redis, server.Config{
 		Port: config.GetInt("PORT", 5000),
 	})
 

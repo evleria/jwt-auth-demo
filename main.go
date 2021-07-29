@@ -5,9 +5,9 @@ import (
 	"flag"
 	"fmt"
 	"github.com/evleria/jwt-auth-demo/internal/common/config"
-	"github.com/evleria/jwt-auth-demo/internal/common/database"
 	"github.com/evleria/jwt-auth-demo/internal/server"
 	"github.com/go-redis/redis/v8"
+	"github.com/jackc/pgx/v4"
 	"github.com/labstack/echo/v4"
 	"log"
 )
@@ -22,8 +22,6 @@ func initFlags() {
 // @title JWT Auth Demo Project
 func main() {
 	initFlags()
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
 
 	err := config.Load(cfgPath)
 	if err != nil {
@@ -32,14 +30,14 @@ func main() {
 
 	dbUrl := getPostgresConnectionString()
 
-	db, err := database.New(ctx, dbUrl)
+	db, err := pgx.Connect(context.Background(), dbUrl)
 	check(err)
 
 	redis := redis.NewClient(&redis.Options{
 		Addr:     getRedisAddress(),
 		Password: config.GetString("REDIS_PASSWORD", ""),
 	})
-	_, err = redis.Ping(ctx).Result()
+	_, err = redis.Ping(context.TODO()).Result()
 	check(err)
 
 	e := echo.New()

@@ -6,7 +6,7 @@ COPY go.sum .
 RUN go mod download
 
 COPY main.go /
-COPY docs /docs
+COPY /docs /docs
 COPY /internal /internal
 RUN go build -o server ./main.go
 

@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/evleria/jwt-auth-demo/internal/common/config"
 	"github.com/evleria/jwt-auth-demo/internal/common/database"
-	"github.com/evleria/jwt-auth-demo/internal/common/kvstore"
 	"github.com/evleria/jwt-auth-demo/internal/common/webserver"
 	"github.com/evleria/jwt-auth-demo/internal/server"
 	"github.com/go-redis/redis/v8"
@@ -36,15 +35,16 @@ func main() {
 	db, err := database.New(ctx, dbUrl)
 	check(err)
 
-	kvstore, err := kvstore.New(ctx, &redis.Options{
+	redis := redis.NewClient(&redis.Options{
 		Addr:     getRedisAddress(),
 		Password: config.GetString("REDIS_PASSWORD", ""),
 	})
+	_, err = redis.Ping(ctx).Result()
 	check(err)
 
 	webserver := webserver.New()
 
-	server := server.New(webserver, db, kvstore, server.Config{
+	server := server.New(webserver, db, redis, server.Config{
 		Port: config.GetInt("PORT", 5000),
 	})
 

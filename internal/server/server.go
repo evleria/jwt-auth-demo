@@ -1,10 +1,11 @@
 package server
 
 import (
+	_ "github.com/evleria/jwt-auth-demo/docs"
 	"github.com/evleria/jwt-auth-demo/internal/common/database"
-	"github.com/evleria/jwt-auth-demo/internal/common/kvstore"
 	"github.com/evleria/jwt-auth-demo/internal/common/webserver"
 	"github.com/evleria/jwt-auth-demo/internal/modules/auth"
+	"github.com/go-redis/redis/v8"
 	"github.com/labstack/echo/v4/middleware"
 	echoSwagger "github.com/swaggo/echo-swagger"
 )
@@ -16,15 +17,15 @@ type Server interface {
 type server struct {
 	webserver webserver.WebServer
 	db        database.Database
-	kvstore   kvstore.KVStore
+	redis     *redis.Client
 	config    Config
 }
 
-func New(webServer webserver.WebServer, db database.Database, kvstore kvstore.KVStore, config Config) Server {
+func New(webServer webserver.WebServer, db database.Database, redis *redis.Client, config Config) Server {
 	return &server{
 		webserver: webServer,
 		db:        db,
-		kvstore:   kvstore,
+		redis:     redis,
 		config:    config,
 	}
 }
@@ -42,7 +43,7 @@ func (s *server) initRoutes() {
 	auth.AddModule(
 		engine.Group("/auth"),
 		s.db,
-		s.kvstore)
+		s.redis)
 
 	engine.GET("/swagger/*", echoSwagger.WrapHandler)
 }

@@ -51,13 +51,13 @@ var doc = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/controller.DefaultHttpError"
+                            "$ref": "#/definitions/auth.DefaultHttpError"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/controller.DefaultHttpError"
+                            "$ref": "#/definitions/auth.DefaultHttpError"
                         }
                     }
                 }
@@ -90,13 +90,13 @@ var doc = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/controller.DefaultHttpError"
+                            "$ref": "#/definitions/auth.DefaultHttpError"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/controller.DefaultHttpError"
+                            "$ref": "#/definitions/auth.DefaultHttpError"
                         }
                     }
                 }
@@ -126,13 +126,13 @@ var doc = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/controller.DefaultHttpError"
+                            "$ref": "#/definitions/auth.DefaultHttpError"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/controller.DefaultHttpError"
+                            "$ref": "#/definitions/auth.DefaultHttpError"
                         }
                     }
                 }
@@ -140,6 +140,14 @@ var doc = `{
         }
     },
     "definitions": {
+        "auth.DefaultHttpError": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
         "auth.LoginRequest": {
             "type": "object",
             "required": [
@@ -201,14 +209,6 @@ var doc = `{
                     "type": "string"
                 },
                 "password": {
-                    "type": "string"
-                }
-            }
-        },
-        "controller.DefaultHttpError": {
-            "type": "object",
-            "properties": {
-                "message": {
                     "type": "string"
                 }
             }

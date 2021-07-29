@@ -1,4 +1,9 @@
 definitions:
+  auth.DefaultHttpError:
+    properties:
+      message:
+        type: string
+    type: object
   auth.LoginRequest:
     properties:
       email:
@@ -42,11 +47,6 @@ definitions:
     - lastName
     - password
     type: object
-  controller.DefaultHttpError:
-    properties:
-      message:
-        type: string
-    type: object
 info:
   contact: {}
   title: JWT Auth Demo Project
@@ -68,11 +68,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/controller.DefaultHttpError'
+            $ref: '#/definitions/auth.DefaultHttpError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/controller.DefaultHttpError'
+            $ref: '#/definitions/auth.DefaultHttpError'
       summary: Logins a user
       tags:
       - Auth
@@ -93,11 +93,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/controller.DefaultHttpError'
+            $ref: '#/definitions/auth.DefaultHttpError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/controller.DefaultHttpError'
+            $ref: '#/definitions/auth.DefaultHttpError'
       summary: Refresh a user
       tags:
       - Auth
@@ -116,11 +116,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/controller.DefaultHttpError'
+            $ref: '#/definitions/auth.DefaultHttpError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/controller.DefaultHttpError'
+            $ref: '#/definitions/auth.DefaultHttpError'
       summary: Registers a new user
       tags:
       - Auth

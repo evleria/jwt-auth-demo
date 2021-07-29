@@ -1,11 +1,10 @@
 package server
 
 import (
-	_ "github.com/evleria/jwt-auth-demo/cmd/rest/docs"
-	"github.com/evleria/jwt-auth-demo/pkg/common/database"
-	"github.com/evleria/jwt-auth-demo/pkg/common/kvstore"
-	"github.com/evleria/jwt-auth-demo/pkg/common/webserver"
-	"github.com/evleria/jwt-auth-demo/pkg/modules/auth"
+	"github.com/evleria/jwt-auth-demo/internal/common/database"
+	"github.com/evleria/jwt-auth-demo/internal/common/kvstore"
+	"github.com/evleria/jwt-auth-demo/internal/common/webserver"
+	"github.com/evleria/jwt-auth-demo/internal/modules/auth"
 	"github.com/labstack/echo/v4/middleware"
 	echoSwagger "github.com/swaggo/echo-swagger"
 )

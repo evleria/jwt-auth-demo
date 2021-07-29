@@ -1,6 +1,6 @@
 package auth
 
-import "github.com/evleria/jwt-auth-demo/pkg/common/database"
+import "github.com/evleria/jwt-auth-demo/internal/common/database"
 
 type (
 	UserRepository interface {

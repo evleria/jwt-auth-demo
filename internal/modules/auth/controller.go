@@ -1,7 +1,7 @@
 package auth
 
 import (
-	ctrl "github.com/evleria/jwt-auth-demo/pkg/common/controller"
+	ctrl "github.com/evleria/jwt-auth-demo/internal/common/controller"
 	"github.com/labstack/echo/v4"
 	"net/http"
 )

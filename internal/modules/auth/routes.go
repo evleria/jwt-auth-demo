@@ -1,9 +1,9 @@
 package auth
 
 import (
-	"github.com/evleria/jwt-auth-demo/pkg/common/database"
-	"github.com/evleria/jwt-auth-demo/pkg/common/jwt"
-	"github.com/evleria/jwt-auth-demo/pkg/common/kvstore"
+	"github.com/evleria/jwt-auth-demo/internal/common/database"
+	"github.com/evleria/jwt-auth-demo/internal/common/jwt"
+	"github.com/evleria/jwt-auth-demo/internal/common/kvstore"
 	"github.com/labstack/echo/v4"
 )
 

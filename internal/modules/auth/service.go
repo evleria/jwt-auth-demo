@@ -3,8 +3,8 @@ package auth
 import (
 	"errors"
 	"fmt"
-	"github.com/evleria/jwt-auth-demo/pkg/common/bcrypt"
-	"github.com/evleria/jwt-auth-demo/pkg/common/jwt"
+	"github.com/evleria/jwt-auth-demo/internal/common/bcrypt"
+	"github.com/evleria/jwt-auth-demo/internal/common/jwt"
 	"time"
 )
 

@@ -3,7 +3,7 @@ package auth
 import (
 	"errors"
 	"fmt"
-	"github.com/evleria/jwt-auth-demo/pkg/common/kvstore"
+	"github.com/evleria/jwt-auth-demo/internal/common/kvstore"
 	"github.com/go-redis/redis/v8"
 	"strconv"
 	"time"

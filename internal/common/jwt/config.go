@@ -1,7 +1,7 @@
 package jwt
 
 import (
-	"github.com/evleria/jwt-auth-demo/pkg/common/config"
+	"github.com/evleria/jwt-auth-demo/internal/common/config"
 	"time"
 )
 

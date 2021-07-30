@@ -1,5 +1,5 @@
 swag:
-	swag init --parseDependency --parseDepth=5 -d ./cmd/rest -o ./cmd/rest/docs
+	swag init --parseDependency --parseDepth=5
 compose-build:
 	docker-compose build
 compose-up:

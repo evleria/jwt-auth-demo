@@ -1,9 +1,9 @@
-package auth
+package repositories
 
 import (
+	"context"
 	"errors"
 	"fmt"
-	"github.com/evleria/jwt-auth-demo/pkg/common/kvstore"
 	"github.com/go-redis/redis/v8"
 	"strconv"
 	"time"
@@ -15,23 +15,23 @@ type TokenRepository interface {
 }
 
 type tokenRepository struct {
-	store kvstore.KVStore
+	redis *redis.Client
 }
 
-func NewTokenRepository(store kvstore.KVStore) TokenRepository {
+func NewTokenRepository(redis *redis.Client) TokenRepository {
 	return &tokenRepository{
-		store: store,
+		redis: redis,
 	}
 }
 
 func (r *tokenRepository) Blacklist(userId int, t time.Time, ttl time.Duration) error {
 	key := getBlacklistKey(userId)
-	return r.store.Set(key, t.UnixNano(), ttl)
+	return r.redis.Set(context.TODO(), key, t, ttl).Err()
 }
 
 func (r *tokenRepository) IsBlacklisted(userId int) (time.Time, bool, error) {
 	key := getBlacklistKey(userId)
-	s, err := r.store.Get(key)
+	s, err := r.redis.Get(context.TODO(), key).Result()
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
 			return time.Time{}, false, nil

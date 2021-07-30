@@ -4,12 +4,11 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"github.com/evleria/jwt-auth-demo/pkg/common/config"
-	"github.com/evleria/jwt-auth-demo/pkg/common/database"
-	"github.com/evleria/jwt-auth-demo/pkg/common/kvstore"
-	"github.com/evleria/jwt-auth-demo/pkg/common/webserver"
-	"github.com/evleria/jwt-auth-demo/pkg/server"
+	"github.com/evleria/jwt-auth-demo/internal/config"
+	"github.com/evleria/jwt-auth-demo/internal/server"
 	"github.com/go-redis/redis/v8"
+	"github.com/jackc/pgx/v4"
+	"github.com/labstack/echo/v4"
 	"log"
 )
 
@@ -23,8 +22,6 @@ func initFlags() {
 // @title JWT Auth Demo Project
 func main() {
 	initFlags()
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
 
 	err := config.Load(cfgPath)
 	if err != nil {
@@ -33,22 +30,21 @@ func main() {
 
 	dbUrl := getPostgresConnectionString()
 
-	db, err := database.New(ctx, dbUrl)
+	db, err := pgx.Connect(context.Background(), dbUrl)
 	check(err)
 
-	kvstore, err := kvstore.New(ctx, &redis.Options{
+	redisClient := redis.NewClient(&redis.Options{
 		Addr:     getRedisAddress(),
 		Password: config.GetString("REDIS_PASSWORD", ""),
 	})
+	_, err = redisClient.Ping(context.TODO()).Result()
 	check(err)
 
-	webserver := webserver.New()
+	e := echo.New()
 
-	server := server.New(webserver, db, kvstore, server.Config{
-		Port: config.GetInt("PORT", 5000),
-	})
+	srv := server.New(e, db, redisClient)
 
-	check(server.Listen())
+	check(srv.Listen(config.GetInt("PORT", 5000)))
 }
 
 func getPostgresConnectionString() string {

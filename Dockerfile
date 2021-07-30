@@ -5,9 +5,10 @@ COPY go.mod .
 COPY go.sum .
 RUN go mod download
 
-COPY /cmd /cmd
-COPY /pkg /pkg
-RUN go build -o server ./cmd/rest/main.go
+COPY main.go /
+COPY /docs /docs
+COPY /internal /internal
+RUN go build -o server ./main.go
 
 FROM alpine
 

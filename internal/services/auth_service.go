@@ -3,9 +3,9 @@ package services
 import (
 	"errors"
 	"fmt"
-	"github.com/evleria/jwt-auth-demo/internal/common/bcrypt"
 	"github.com/evleria/jwt-auth-demo/internal/common/jwt"
 	"github.com/evleria/jwt-auth-demo/internal/repositories"
+	"golang.org/x/crypto/bcrypt"
 	"time"
 )
 
@@ -30,12 +30,11 @@ func NewAuthService(userRepository repositories.UserRepository, tokenRepository 
 }
 
 func (s *authService) Register(firstName, lastName, email, password string) error {
-	hash, err := bcrypt.Hash(password)
+	var hash, err = bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return fmt.Errorf("cannot register: %v", err)
 	}
-
-	err = s.userRepository.CreateNewUser(firstName, lastName, email, hash)
+	err = s.userRepository.CreateNewUser(firstName, lastName, email, string(hash))
 	if err != nil {
 		return errors.New("cannot register a new user")
 	}
@@ -48,7 +47,8 @@ func (s *authService) Login(email, password string) (string, string, error) {
 		return "", "", errors.New("cannot find user")
 	}
 
-	if !bcrypt.Compare(user.PassHash, password) {
+	err = bcrypt.CompareHashAndPassword([]byte(user.PassHash), []byte(password))
+	if err != nil {
 		return "", "", errors.New("invalid password provided")
 	}
 

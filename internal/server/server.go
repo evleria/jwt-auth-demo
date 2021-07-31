@@ -3,8 +3,8 @@ package server
 import (
 	"fmt"
 	_ "github.com/evleria/jwt-auth-demo/docs"
-	"github.com/evleria/jwt-auth-demo/internal/common/jwt"
 	"github.com/evleria/jwt-auth-demo/internal/controllers"
+	"github.com/evleria/jwt-auth-demo/internal/jwt"
 	"github.com/evleria/jwt-auth-demo/internal/repository"
 	"github.com/evleria/jwt-auth-demo/internal/service"
 	"github.com/go-redis/redis/v8"

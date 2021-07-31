@@ -3,7 +3,7 @@ package service
 import (
 	"errors"
 	"fmt"
-	"github.com/evleria/jwt-auth-demo/internal/common/jwt"
+	"github.com/evleria/jwt-auth-demo/internal/jwt"
 	"github.com/evleria/jwt-auth-demo/internal/repository"
 	"golang.org/x/crypto/bcrypt"
 	"time"

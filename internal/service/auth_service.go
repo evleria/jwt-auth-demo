@@ -1,35 +1,35 @@
-package services
+package service
 
 import (
 	"errors"
 	"fmt"
 	"github.com/evleria/jwt-auth-demo/internal/common/jwt"
-	"github.com/evleria/jwt-auth-demo/internal/repositories"
+	"github.com/evleria/jwt-auth-demo/internal/repository"
 	"golang.org/x/crypto/bcrypt"
 	"time"
 )
 
-type AuthService interface {
+type Auth interface {
 	Register(firstName, lastName, email, password string) error
 	Login(email, password string) (string, string, error)
 	Refresh(refreshToken string) (string, error)
 }
 
-type authService struct {
-	userRepository  repositories.UserRepository
-	tokenRepository repositories.TokenRepository
+type auth struct {
+	userRepository  repository.UserRepository
+	tokenRepository repository.Token
 	jwtMaker        jwt.Maker
 }
 
-func NewAuthService(userRepository repositories.UserRepository, tokenRepository repositories.TokenRepository, jwtMaker jwt.Maker) *authService {
-	return &authService{
+func NewAuthService(userRepository repository.UserRepository, tokenRepository repository.Token, jwtMaker jwt.Maker) *auth {
+	return &auth{
 		userRepository:  userRepository,
 		tokenRepository: tokenRepository,
 		jwtMaker:        jwtMaker,
 	}
 }
 
-func (s *authService) Register(firstName, lastName, email, password string) error {
+func (s *auth) Register(firstName, lastName, email, password string) error {
 	var hash, err = bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return fmt.Errorf("cannot register: %v", err)
@@ -41,7 +41,7 @@ func (s *authService) Register(firstName, lastName, email, password string) erro
 	return nil
 }
 
-func (s *authService) Login(email, password string) (string, string, error) {
+func (s *auth) Login(email, password string) (string, string, error) {
 	user, err := s.userRepository.GetUserByEmail(email)
 	if err != nil {
 		return "", "", errors.New("cannot find user")
@@ -65,7 +65,7 @@ func (s *authService) Login(email, password string) (string, string, error) {
 	return accessToken, refreshToken, nil
 }
 
-func (s *authService) Refresh(refreshToken string) (string, error) {
+func (s *auth) Refresh(refreshToken string) (string, error) {
 	claims, err := s.jwtMaker.VerifyRefreshToken(refreshToken)
 	if err != nil {
 		return "", err

@@ -5,8 +5,8 @@ import (
 	_ "github.com/evleria/jwt-auth-demo/docs"
 	"github.com/evleria/jwt-auth-demo/internal/common/jwt"
 	"github.com/evleria/jwt-auth-demo/internal/controllers"
-	"github.com/evleria/jwt-auth-demo/internal/repositories"
-	"github.com/evleria/jwt-auth-demo/internal/services"
+	"github.com/evleria/jwt-auth-demo/internal/repository"
+	"github.com/evleria/jwt-auth-demo/internal/service"
 	"github.com/go-redis/redis/v8"
 	"github.com/jackc/pgx/v4"
 	"github.com/labstack/echo/v4"
@@ -39,10 +39,10 @@ func (s *server) Listen(port int) error {
 
 func (s *server) initRoutes() {
 	jwtMaker := jwt.NewJwtMakerFromConfig()
-	userRepository := repositories.NewUserRepository(s.db)
-	tokenRepository := repositories.NewTokenRepository(s.redis)
-	service := services.NewAuthService(userRepository, tokenRepository, jwtMaker)
-	controller := controllers.NewAuthController(service)
+	userRepository := repository.NewUserRepository(s.db)
+	tokenRepository := repository.NewTokenRepository(s.redis)
+	authService := service.NewAuthService(userRepository, tokenRepository, jwtMaker)
+	controller := controllers.NewAuthController(authService)
 
 	s.echo.Use(middleware.Logger())
 	s.echo.Use(middleware.Recover())

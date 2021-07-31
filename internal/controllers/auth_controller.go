@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"fmt"
-	"github.com/evleria/jwt-auth-demo/internal/services"
+	"github.com/evleria/jwt-auth-demo/internal/service"
 	"github.com/labstack/echo/v4"
 	"gopkg.in/go-playground/validator.v9"
 	"net/http"
@@ -17,10 +17,10 @@ type AuthController interface {
 
 type authController struct {
 	validate *validator.Validate
-	service  services.AuthService
+	service  service.Auth
 }
 
-func NewAuthController(service services.AuthService) AuthController {
+func NewAuthController(service service.Auth) AuthController {
 	return &authController{
 		validate: validator.New(),
 		service:  service,

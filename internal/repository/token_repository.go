@@ -1,4 +1,4 @@
-package repositories
+package repository
 
 import (
 	"context"
@@ -9,27 +9,27 @@ import (
 	"time"
 )
 
-type TokenRepository interface {
+type Token interface {
 	Blacklist(userId int, t time.Time, ttl time.Duration) error
 	IsBlacklisted(userId int) (time.Time, bool, error)
 }
 
-type tokenRepository struct {
+type token struct {
 	redis *redis.Client
 }
 
-func NewTokenRepository(redis *redis.Client) TokenRepository {
-	return &tokenRepository{
+func NewTokenRepository(redis *redis.Client) Token {
+	return &token{
 		redis: redis,
 	}
 }
 
-func (r *tokenRepository) Blacklist(userId int, t time.Time, ttl time.Duration) error {
+func (r *token) Blacklist(userId int, t time.Time, ttl time.Duration) error {
 	key := getBlacklistKey(userId)
 	return r.redis.Set(context.TODO(), key, t, ttl).Err()
 }
 
-func (r *tokenRepository) IsBlacklisted(userId int) (time.Time, bool, error) {
+func (r *token) IsBlacklisted(userId int) (time.Time, bool, error) {
 	key := getBlacklistKey(userId)
 	s, err := r.redis.Get(context.TODO(), key).Result()
 	if err != nil {

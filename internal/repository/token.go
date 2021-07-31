@@ -26,7 +26,7 @@ func NewTokenRepository(redis *redis.Client) Token {
 
 func (r *token) Blacklist(ctx context.Context, userId int, t time.Time, ttl time.Duration) error {
 	key := getBlacklistKey(userId)
-	return r.redis.Set(ctx, key, t, ttl).Err()
+	return r.redis.Set(ctx, key, t.UnixNano(), ttl).Err()
 }
 
 func (r *token) IsBlacklisted(ctx context.Context, userId int) (time.Time, bool, error) {

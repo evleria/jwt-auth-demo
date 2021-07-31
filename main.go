@@ -68,6 +68,7 @@ func initRoutes(e *echo.Echo, db *pgx.Conn, redisClient *redis.Client) {
 	authGroup.POST("/register", authHandler.Register)
 	authGroup.POST("/login", authHandler.Login)
 	authGroup.POST("/refresh", authHandler.Refresh)
+	authGroup.POST("/logout", authHandler.Logout)
 
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
 }

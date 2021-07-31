@@ -13,6 +13,7 @@ type Auth interface {
 	Register(context echo.Context) error
 	Login(context echo.Context) error
 	Refresh(context echo.Context) error
+	Logout(context echo.Context) error
 }
 
 type auth struct {
@@ -87,8 +88,8 @@ func (c *auth) Login(ctx echo.Context) error {
 
 // Refresh godoc
 // @Tags Auth
-// @Summary Refresh a user
-// @Param refreshData body RefreshRequest true "Refresh information"
+// @Summary Refreshes access token
+// @Param refreshData body RefreshRequest true "Refresh token"
 // @Success 200 {object} RefreshResponse
 // @Failure 400 {object} DefaultHttpError
 // @Failure 500 {object} DefaultHttpError
@@ -102,13 +103,35 @@ func (c *auth) Refresh(ctx echo.Context) error {
 
 	accessToken, err := c.service.Refresh(ctx.Request().Context(), request.RefreshToken)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError)
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
 	response := RefreshResponse{
 		AccessToken: accessToken,
 	}
 	return ctx.JSON(http.StatusOK, response)
+}
+
+// Logout godoc
+// @Tags Auth
+// @Summary Logouts a user
+// @Param logoutData body LogoutRequest true "Refresh token"
+// @Success 200 "Logged out"
+// @Failure 400 {object} DefaultHttpError
+// @Failure 500 {object} DefaultHttpError
+// @Router /auth/logout [post]
+func (c *auth) Logout(ctx echo.Context) error {
+	request := new(LogoutRequest)
+	err := ctx.Bind(request)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest)
+	}
+
+	err = c.service.Logout(ctx.Request().Context(), request.RefreshToken)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+	return ctx.NoContent(http.StatusOK)
 }
 
 func (c *auth) Validate(input interface{}) error {
@@ -151,4 +174,8 @@ type RefreshRequest struct {
 
 type RefreshResponse struct {
 	AccessToken string `json:"accessToken"`
+}
+
+type LogoutRequest struct {
+	RefreshToken string `json:"refreshToken"`
 }

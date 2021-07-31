@@ -37,7 +37,7 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/auth.LoginRequest"
+                            "$ref": "#/definitions/handler.LoginRequest"
                         }
                     }
                 ],
@@ -45,19 +45,55 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/auth.LoginResponse"
+                            "$ref": "#/definitions/handler.LoginResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/auth.DefaultHttpError"
+                            "$ref": "#/definitions/handler.DefaultHttpError"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/auth.DefaultHttpError"
+                            "$ref": "#/definitions/handler.DefaultHttpError"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/logout": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Logouts a user",
+                "parameters": [
+                    {
+                        "description": "Refresh token",
+                        "name": "logoutData",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handler.LogoutRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Logged out"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.DefaultHttpError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.DefaultHttpError"
                         }
                     }
                 }
@@ -68,15 +104,15 @@ var doc = `{
                 "tags": [
                     "Auth"
                 ],
-                "summary": "Refresh a user",
+                "summary": "Refreshes access token",
                 "parameters": [
                     {
-                        "description": "Refresh information",
+                        "description": "Refresh token",
                         "name": "refreshData",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/auth.RefreshRequest"
+                            "$ref": "#/definitions/handler.RefreshRequest"
                         }
                     }
                 ],
@@ -84,19 +120,19 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/auth.RefreshResponse"
+                            "$ref": "#/definitions/handler.RefreshResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/auth.DefaultHttpError"
+                            "$ref": "#/definitions/handler.DefaultHttpError"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/auth.DefaultHttpError"
+                            "$ref": "#/definitions/handler.DefaultHttpError"
                         }
                     }
                 }
@@ -115,7 +151,7 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/auth.RegisterRequest"
+                            "$ref": "#/definitions/handler.RegisterRequest"
                         }
                     }
                 ],
@@ -126,13 +162,13 @@ var doc = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/auth.DefaultHttpError"
+                            "$ref": "#/definitions/handler.DefaultHttpError"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/auth.DefaultHttpError"
+                            "$ref": "#/definitions/handler.DefaultHttpError"
                         }
                     }
                 }
@@ -140,7 +176,7 @@ var doc = `{
         }
     },
     "definitions": {
-        "auth.DefaultHttpError": {
+        "handler.DefaultHttpError": {
             "type": "object",
             "properties": {
                 "message": {
@@ -148,7 +184,7 @@ var doc = `{
                 }
             }
         },
-        "auth.LoginRequest": {
+        "handler.LoginRequest": {
             "type": "object",
             "required": [
                 "email",
@@ -163,7 +199,7 @@ var doc = `{
                 }
             }
         },
-        "auth.LoginResponse": {
+        "handler.LoginResponse": {
             "type": "object",
             "properties": {
                 "accessToken": {
@@ -174,7 +210,7 @@ var doc = `{
                 }
             }
         },
-        "auth.RefreshRequest": {
+        "handler.LogoutRequest": {
             "type": "object",
             "properties": {
                 "refreshToken": {
@@ -182,7 +218,15 @@ var doc = `{
                 }
             }
         },
-        "auth.RefreshResponse": {
+        "handler.RefreshRequest": {
+            "type": "object",
+            "properties": {
+                "refreshToken": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.RefreshResponse": {
             "type": "object",
             "properties": {
                 "accessToken": {
@@ -190,7 +234,7 @@ var doc = `{
                 }
             }
         },
-        "auth.RegisterRequest": {
+        "handler.RegisterRequest": {
             "type": "object",
             "required": [
                 "email",

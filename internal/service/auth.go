@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/evleria/jwt-auth-demo/internal/config"
 	"github.com/evleria/jwt-auth-demo/internal/jwt"
 	"github.com/evleria/jwt-auth-demo/internal/repository"
 	"golang.org/x/crypto/bcrypt"
@@ -14,6 +15,7 @@ type Auth interface {
 	Register(ctx context.Context, firstName, lastName, email, password string) error
 	Login(ctx context.Context, email, password string) (string, string, error)
 	Refresh(ctx context.Context, refreshToken string) (string, error)
+	Logout(ctx context.Context, refreshToken string) error
 }
 
 type auth struct {
@@ -67,21 +69,9 @@ func (s *auth) Login(ctx context.Context, email, password string) (string, strin
 }
 
 func (s *auth) Refresh(ctx context.Context, refreshToken string) (string, error) {
-	claims, err := s.jwtMaker.VerifyRefreshToken(refreshToken)
+	userId, err := s.checkRefreshToken(ctx, refreshToken)
 	if err != nil {
 		return "", err
-	}
-
-	userId := int(claims["sub"].(float64))
-	t, inBlacklist, err := s.tokenRepository.IsBlacklisted(ctx, userId)
-	if err != nil {
-		return "", err
-	}
-	if inBlacklist {
-		iat := time.Unix(int64(claims["iat"].(int)), 0)
-		if t.After(iat) {
-			return "", errors.New("token is blacklisted")
-		}
 	}
 
 	user, err := s.userRepository.GetUserById(userId)
@@ -94,4 +84,34 @@ func (s *auth) Refresh(ctx context.Context, refreshToken string) (string, error)
 		return "", errors.New("cannot generate access token")
 	}
 	return accessToken, err
+}
+
+func (s *auth) Logout(ctx context.Context, refreshToken string) error {
+	userId, err := s.checkRefreshToken(ctx, refreshToken)
+	if err != nil {
+		return err
+	}
+
+	return s.tokenRepository.Blacklist(ctx, userId, time.Now(), config.GetDuration("REFRESH_TOKEN_DURATION", time.Hour*24*7))
+}
+
+func (s *auth) checkRefreshToken(ctx context.Context, refreshToken string) (int, error) {
+	claims, err := s.jwtMaker.VerifyRefreshToken(refreshToken)
+	if err != nil {
+		return 0, err
+	}
+
+	userId := int(claims["sub"].(float64))
+	t, inBlacklist, err := s.tokenRepository.IsBlacklisted(ctx, userId)
+	if err != nil {
+		return 0, err
+	}
+	if inBlacklist {
+		iat := time.Unix(int64(claims["iat"].(float64)), 0)
+		if t.After(iat) {
+			return 0, errors.New("token is blacklisted")
+		}
+	}
+
+	return userId, nil
 }

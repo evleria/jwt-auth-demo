@@ -1,10 +1,10 @@
 definitions:
-  auth.DefaultHttpError:
+  handler.DefaultHttpError:
     properties:
       message:
         type: string
     type: object
-  auth.LoginRequest:
+  handler.LoginRequest:
     properties:
       email:
         type: string
@@ -14,24 +14,29 @@ definitions:
     - email
     - password
     type: object
-  auth.LoginResponse:
+  handler.LoginResponse:
     properties:
       accessToken:
         type: string
       refreshToken:
         type: string
     type: object
-  auth.RefreshRequest:
+  handler.LogoutRequest:
     properties:
       refreshToken:
         type: string
     type: object
-  auth.RefreshResponse:
+  handler.RefreshRequest:
+    properties:
+      refreshToken:
+        type: string
+    type: object
+  handler.RefreshResponse:
     properties:
       accessToken:
         type: string
     type: object
-  auth.RegisterRequest:
+  handler.RegisterRequest:
     properties:
       email:
         type: string
@@ -59,46 +64,69 @@ paths:
         name: loginData
         required: true
         schema:
-          $ref: '#/definitions/auth.LoginRequest'
+          $ref: '#/definitions/handler.LoginRequest'
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/auth.LoginResponse'
+            $ref: '#/definitions/handler.LoginResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/auth.DefaultHttpError'
+            $ref: '#/definitions/handler.DefaultHttpError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/auth.DefaultHttpError'
+            $ref: '#/definitions/handler.DefaultHttpError'
       summary: Logins a user
+      tags:
+      - Auth
+  /auth/logout:
+    post:
+      parameters:
+      - description: Refresh token
+        in: body
+        name: logoutData
+        required: true
+        schema:
+          $ref: '#/definitions/handler.LogoutRequest'
+      responses:
+        "200":
+          description: Logged out
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.DefaultHttpError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.DefaultHttpError'
+      summary: Logouts a user
       tags:
       - Auth
   /auth/refresh:
     post:
       parameters:
-      - description: Refresh information
+      - description: Refresh token
         in: body
         name: refreshData
         required: true
         schema:
-          $ref: '#/definitions/auth.RefreshRequest'
+          $ref: '#/definitions/handler.RefreshRequest'
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/auth.RefreshResponse'
+            $ref: '#/definitions/handler.RefreshResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/auth.DefaultHttpError'
+            $ref: '#/definitions/handler.DefaultHttpError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/auth.DefaultHttpError'
-      summary: Refresh a user
+            $ref: '#/definitions/handler.DefaultHttpError'
+      summary: Refreshes access token
       tags:
       - Auth
   /auth/register:
@@ -109,18 +137,18 @@ paths:
         name: registerData
         required: true
         schema:
-          $ref: '#/definitions/auth.RegisterRequest'
+          $ref: '#/definitions/handler.RegisterRequest'
       responses:
         "201":
           description: Created
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/auth.DefaultHttpError'
+            $ref: '#/definitions/handler.DefaultHttpError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/auth.DefaultHttpError'
+            $ref: '#/definitions/handler.DefaultHttpError'
       summary: Registers a new user
       tags:
       - Auth

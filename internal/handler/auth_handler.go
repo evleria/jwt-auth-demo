@@ -1,4 +1,4 @@
-package controllers
+package handler
 
 import (
 	"fmt"
@@ -9,19 +9,19 @@ import (
 	"strings"
 )
 
-type AuthController interface {
+type Auth interface {
 	Register(context echo.Context) error
 	Login(context echo.Context) error
 	Refresh(context echo.Context) error
 }
 
-type authController struct {
+type auth struct {
 	validate *validator.Validate
 	service  service.Auth
 }
 
-func NewAuthController(service service.Auth) AuthController {
-	return &authController{
+func NewAuthHandler(service service.Auth) Auth {
+	return &auth{
 		validate: validator.New(),
 		service:  service,
 	}
@@ -35,7 +35,7 @@ func NewAuthController(service service.Auth) AuthController {
 // @Failure 400 {object} DefaultHttpError
 // @Failure 500 {object} DefaultHttpError
 // @Router /auth/register [post]
-func (c *authController) Register(ctx echo.Context) error {
+func (c *auth) Register(ctx echo.Context) error {
 	request := new(RegisterRequest)
 	err := ctx.Bind(request)
 	if err != nil {
@@ -62,7 +62,7 @@ func (c *authController) Register(ctx echo.Context) error {
 // @Failure 400 {object} DefaultHttpError
 // @Failure 500 {object} DefaultHttpError
 // @Router /auth/login [post]
-func (c *authController) Login(ctx echo.Context) error {
+func (c *auth) Login(ctx echo.Context) error {
 	request := new(LoginRequest)
 	err := ctx.Bind(request)
 	if err != nil {
@@ -93,7 +93,7 @@ func (c *authController) Login(ctx echo.Context) error {
 // @Failure 400 {object} DefaultHttpError
 // @Failure 500 {object} DefaultHttpError
 // @Router /auth/refresh [post]
-func (c *authController) Refresh(ctx echo.Context) error {
+func (c *auth) Refresh(ctx echo.Context) error {
 	request := new(RefreshRequest)
 	err := ctx.Bind(request)
 	if err != nil {
@@ -111,7 +111,7 @@ func (c *authController) Refresh(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, response)
 }
 
-func (c *authController) Validate(input interface{}) error {
+func (c *auth) Validate(input interface{}) error {
 	err := c.validate.Struct(input)
 	if err != nil {
 		validationErrs := err.(validator.ValidationErrors)

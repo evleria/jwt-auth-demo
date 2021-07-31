@@ -4,11 +4,17 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	_ "github.com/evleria/jwt-auth-demo/docs"
 	"github.com/evleria/jwt-auth-demo/internal/config"
-	"github.com/evleria/jwt-auth-demo/internal/server"
+	"github.com/evleria/jwt-auth-demo/internal/handler"
+	"github.com/evleria/jwt-auth-demo/internal/jwt"
+	"github.com/evleria/jwt-auth-demo/internal/repository"
+	"github.com/evleria/jwt-auth-demo/internal/service"
 	"github.com/go-redis/redis/v8"
 	"github.com/jackc/pgx/v4"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
+	echoSwagger "github.com/swaggo/echo-swagger"
 	"log"
 )
 
@@ -29,7 +35,6 @@ func main() {
 	}
 
 	dbUrl := getPostgresConnectionString()
-
 	db, err := pgx.Connect(context.Background(), dbUrl)
 	check(err)
 
@@ -41,10 +46,28 @@ func main() {
 	check(err)
 
 	e := echo.New()
+	initRoutes(e, db, redisClient)
 
-	srv := server.New(e, db, redisClient)
+	port := fmt.Sprintf(":%d", config.GetInt("PORT", 5000))
+	check(e.Start(port))
+}
 
-	check(srv.Listen(config.GetInt("PORT", 5000)))
+func initRoutes(e *echo.Echo, db *pgx.Conn, redisClient *redis.Client) {
+	jwtMaker := jwt.NewJwtMakerFromConfig()
+	userRepository := repository.NewUserRepository(db)
+	tokenRepository := repository.NewTokenRepository(redisClient)
+	authService := service.NewAuthService(userRepository, tokenRepository, jwtMaker)
+	controller := handler.NewAuthHandler(authService)
+
+	e.Use(middleware.Logger())
+	e.Use(middleware.Recover())
+
+	authGroup := e.Group("/auth")
+	authGroup.POST("/register", controller.Register)
+	authGroup.POST("/login", controller.Login)
+	authGroup.POST("/refresh", controller.Refresh)
+
+	e.GET("/swagger/*", echoSwagger.WrapHandler)
 }
 
 func getPostgresConnectionString() string {

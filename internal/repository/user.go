@@ -6,8 +6,8 @@ import (
 )
 
 type UserRepository interface {
-	CreateNewUser(firstName, lastName, email, hash string) error
-	GetUserByEmail(email string) (*User, error)
+	CreateNewUser(ctx context.Context, firstName, lastName, email, hash string) error
+	GetUserByEmail(ctx context.Context, email string) (*User, error)
 	GetUserById(id int) (*User, error)
 }
 
@@ -29,15 +29,15 @@ func NewUserRepository(db *pgx.Conn) UserRepository {
 	}
 }
 
-func (r *userRepository) CreateNewUser(firstName, lastName, email, hash string) error {
-	_, err := r.db.Exec(context.TODO(), "INSERT INTO users (first_name, last_name, email, pass_hash) VALUES ($1, $2, $3, $4)",
+func (r *userRepository) CreateNewUser(ctx context.Context, firstName, lastName, email, hash string) error {
+	_, err := r.db.Exec(ctx, "INSERT INTO users (first_name, last_name, email, pass_hash) VALUES ($1, $2, $3, $4)",
 		firstName, lastName, email, hash)
 	return err
 }
 
-func (r *userRepository) GetUserByEmail(email string) (*User, error) {
+func (r *userRepository) GetUserByEmail(ctx context.Context, email string) (*User, error) {
 	user := new(User)
-	row := r.db.QueryRow(context.TODO(), "SELECT id, first_name, last_name, email, pass_hash FROM users WHERE email = $1", email)
+	row := r.db.QueryRow(ctx, "SELECT id, first_name, last_name, email, pass_hash FROM users WHERE email = $1", email)
 	err := row.Scan(&user.Id, &user.FirstName, &user.LastName, &user.Email, &user.PassHash)
 	return user, err
 }

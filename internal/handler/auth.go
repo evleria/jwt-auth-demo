@@ -46,7 +46,7 @@ func (c *auth) Register(ctx echo.Context) error {
 		return err
 	}
 
-	err = c.service.Register(request.FirstName, request.LastName, request.Email, request.Password)
+	err = c.service.Register(ctx.Request().Context(), request.FirstName, request.LastName, request.Email, request.Password)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
@@ -72,7 +72,7 @@ func (c *auth) Login(ctx echo.Context) error {
 	if err != nil {
 		return err
 	}
-	accessToken, refreshToken, err := c.service.Login(request.Email, request.Password)
+	accessToken, refreshToken, err := c.service.Login(ctx.Request().Context(), request.Email, request.Password)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError)
 	}
@@ -100,7 +100,7 @@ func (c *auth) Refresh(ctx echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest)
 	}
 
-	accessToken, err := c.service.Refresh(request.RefreshToken)
+	accessToken, err := c.service.Refresh(ctx.Request().Context(), request.RefreshToken)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError)
 	}

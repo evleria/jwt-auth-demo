@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"github.com/evleria/jwt-auth-demo/internal/jwt"
@@ -10,9 +11,9 @@ import (
 )
 
 type Auth interface {
-	Register(firstName, lastName, email, password string) error
-	Login(email, password string) (string, string, error)
-	Refresh(refreshToken string) (string, error)
+	Register(ctx context.Context, firstName, lastName, email, password string) error
+	Login(ctx context.Context, email, password string) (string, string, error)
+	Refresh(ctx context.Context, refreshToken string) (string, error)
 }
 
 type auth struct {
@@ -29,20 +30,20 @@ func NewAuthService(userRepository repository.UserRepository, tokenRepository re
 	}
 }
 
-func (s *auth) Register(firstName, lastName, email, password string) error {
+func (s *auth) Register(ctx context.Context, firstName, lastName, email, password string) error {
 	var hash, err = bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return fmt.Errorf("cannot register: %v", err)
 	}
-	err = s.userRepository.CreateNewUser(firstName, lastName, email, string(hash))
+	err = s.userRepository.CreateNewUser(ctx, firstName, lastName, email, string(hash))
 	if err != nil {
 		return errors.New("cannot register a new user")
 	}
 	return nil
 }
 
-func (s *auth) Login(email, password string) (string, string, error) {
-	user, err := s.userRepository.GetUserByEmail(email)
+func (s *auth) Login(ctx context.Context, email, password string) (string, string, error) {
+	user, err := s.userRepository.GetUserByEmail(ctx, email)
 	if err != nil {
 		return "", "", errors.New("cannot find user")
 	}
@@ -65,14 +66,14 @@ func (s *auth) Login(email, password string) (string, string, error) {
 	return accessToken, refreshToken, nil
 }
 
-func (s *auth) Refresh(refreshToken string) (string, error) {
+func (s *auth) Refresh(ctx context.Context, refreshToken string) (string, error) {
 	claims, err := s.jwtMaker.VerifyRefreshToken(refreshToken)
 	if err != nil {
 		return "", err
 	}
 
 	userId := int(claims["sub"].(float64))
-	t, inBlacklist, err := s.tokenRepository.IsBlacklisted(userId)
+	t, inBlacklist, err := s.tokenRepository.IsBlacklisted(ctx, userId)
 	if err != nil {
 		return "", err
 	}

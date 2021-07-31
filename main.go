@@ -16,6 +16,7 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	echoSwagger "github.com/swaggo/echo-swagger"
 	"log"
+	"time"
 )
 
 var cfgPath string
@@ -57,15 +58,16 @@ func initRoutes(e *echo.Echo, db *pgx.Conn, redisClient *redis.Client) {
 	userRepository := repository.NewUserRepository(db)
 	tokenRepository := repository.NewTokenRepository(redisClient)
 	authService := service.NewAuthService(userRepository, tokenRepository, jwtMaker)
-	controller := handler.NewAuthHandler(authService)
+	authHandler := handler.NewAuthHandler(authService)
 
 	e.Use(middleware.Logger())
+	e.Use(middleware.TimeoutWithConfig(middleware.TimeoutConfig{Timeout: time.Second * 5}))
 	e.Use(middleware.Recover())
 
 	authGroup := e.Group("/auth")
-	authGroup.POST("/register", controller.Register)
-	authGroup.POST("/login", controller.Login)
-	authGroup.POST("/refresh", controller.Refresh)
+	authGroup.POST("/register", authHandler.Register)
+	authGroup.POST("/login", authHandler.Login)
+	authGroup.POST("/refresh", authHandler.Refresh)
 
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
 }

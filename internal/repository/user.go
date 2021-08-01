@@ -2,21 +2,14 @@ package repository
 
 import (
 	"context"
+	"github.com/evleria/jwt-auth-demo/internal/repository/entities"
 	"github.com/jackc/pgx/v4"
 )
 
 type UserRepository interface {
 	CreateNewUser(ctx context.Context, firstName, lastName, email, hash string) error
-	GetUserByEmail(ctx context.Context, email string) (*User, error)
-	GetUserById(id int) (*User, error)
-}
-
-type User struct {
-	Id        int    `db:"id"`
-	FirstName string `db:"first_name"`
-	LastName  string `db:"last_name"`
-	Email     string `db:"email"`
-	PassHash  string `db:"pass_hash"`
+	GetUserByEmail(ctx context.Context, email string) (*entities.User, error)
+	GetUserById(ctx context.Context, id int) (*entities.User, error)
 }
 
 type userRepository struct {
@@ -35,16 +28,16 @@ func (r *userRepository) CreateNewUser(ctx context.Context, firstName, lastName,
 	return err
 }
 
-func (r *userRepository) GetUserByEmail(ctx context.Context, email string) (*User, error) {
-	user := new(User)
+func (r *userRepository) GetUserByEmail(ctx context.Context, email string) (*entities.User, error) {
+	user := new(entities.User)
 	row := r.db.QueryRow(ctx, "SELECT id, first_name, last_name, email, pass_hash FROM users WHERE email = $1", email)
 	err := row.Scan(&user.Id, &user.FirstName, &user.LastName, &user.Email, &user.PassHash)
 	return user, err
 }
 
-func (r *userRepository) GetUserById(id int) (*User, error) {
-	user := new(User)
-	row := r.db.QueryRow(context.TODO(), "SELECT * FROM users WHERE id = $1", id)
+func (r *userRepository) GetUserById(ctx context.Context, id int) (*entities.User, error) {
+	user := new(entities.User)
+	row := r.db.QueryRow(ctx, "SELECT * FROM users WHERE id = $1", id)
 	err := row.Scan(&user.Id, &user.FirstName, &user.LastName, &user.Email, &user.PassHash)
 
 	return user, err

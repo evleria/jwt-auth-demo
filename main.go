@@ -8,12 +8,13 @@ import (
 	"github.com/evleria/jwt-auth-demo/internal/config"
 	"github.com/evleria/jwt-auth-demo/internal/handler"
 	"github.com/evleria/jwt-auth-demo/internal/jwt"
+	"github.com/evleria/jwt-auth-demo/internal/middleware"
 	"github.com/evleria/jwt-auth-demo/internal/repository"
 	"github.com/evleria/jwt-auth-demo/internal/service"
 	"github.com/go-redis/redis/v8"
 	"github.com/jackc/pgx/v4"
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
+	echoMiddleware "github.com/labstack/echo/v4/middleware"
 	echoSwagger "github.com/swaggo/echo-swagger"
 	"log"
 	"time"
@@ -60,15 +61,23 @@ func initRoutes(e *echo.Echo, db *pgx.Conn, redisClient *redis.Client) {
 	authService := service.NewAuthService(userRepository, tokenRepository, jwtMaker)
 	authHandler := handler.NewAuthHandler(authService)
 
-	e.Use(middleware.Logger())
-	e.Use(middleware.TimeoutWithConfig(middleware.TimeoutConfig{Timeout: time.Second * 5}))
-	e.Use(middleware.Recover())
+	e.Use(echoMiddleware.Logger())
+	e.Use(echoMiddleware.TimeoutWithConfig(echoMiddleware.TimeoutConfig{Timeout: time.Second * 5}))
+	e.Use(echoMiddleware.Recover())
 
+	// Auth
 	authGroup := e.Group("/auth")
 	authGroup.POST("/register", authHandler.Register)
 	authGroup.POST("/login", authHandler.Login)
 	authGroup.POST("/refresh", authHandler.Refresh)
 	authGroup.POST("/logout", authHandler.Logout)
+
+	// User
+	userService := service.NewUserService(userRepository)
+	userHandler := handler.NewUserHandler(userService)
+	userGroup := e.Group("/api/user")
+	userGroup.Use(middleware.Jwt(authService))
+	userGroup.GET("/me", userHandler.Me)
 
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
 }

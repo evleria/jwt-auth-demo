@@ -26,6 +26,17 @@ definitions:
       refreshToken:
         type: string
     type: object
+  handler.MeResponse:
+    properties:
+      email:
+        type: string
+      firstName:
+        type: string
+      id:
+        type: integer
+      lastName:
+        type: string
+    type: object
   handler.RefreshRequest:
     properties:
       refreshToken:
@@ -56,6 +67,30 @@ info:
   contact: {}
   title: JWT Auth Demo Project
 paths:
+  /api/user/me:
+    get:
+      parameters:
+      - description: Authorization header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.MeResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.DefaultHttpError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.DefaultHttpError'
+      summary: Shows information about current user
+      tags:
+      - User
   /auth/login:
     post:
       parameters:

@@ -12,7 +12,8 @@ import (
 type Maker interface {
 	GenerateAccessToken(userId int, email string) (string, error)
 	GenerateRefreshToken(userId int) (string, error)
-	VerifyRefreshToken(refreshToken string) (jwtgo.MapClaims, error)
+	VerifyAccessToken(accessToken string) (AccessTokenClaims, error)
+	VerifyRefreshToken(refreshToken string) (RefreshTokenClaims, error)
 }
 
 type maker struct {
@@ -32,23 +33,31 @@ func NewJwtMakerFromConfig() Maker {
 }
 
 func (m *maker) GenerateAccessToken(userId int, email string) (string, error) {
-	return m.generateJwt(jwtgo.MapClaims{
-		"sub":   userId,
-		"email": email,
+	return m.generateJwt(&AccessTokenClaims{
+		UserId: userId,
+		Email:  email,
 	}, m.accessTokenDuration, m.accessTokenSecret)
 }
 
 func (m *maker) GenerateRefreshToken(userId int) (string, error) {
-	return m.generateJwt(jwtgo.MapClaims{
-		"sub": userId,
+	return m.generateJwt(&RefreshTokenClaims{
+		UserId: userId,
 	}, m.refreshTokenDuration, m.refreshTokenSecret)
 }
 
-func (m *maker) VerifyRefreshToken(refreshToken string) (jwtgo.MapClaims, error) {
-	return m.verifyJwt(refreshToken, m.refreshTokenSecret)
+func (m *maker) VerifyAccessToken(accessToken string) (AccessTokenClaims, error) {
+	claims := AccessTokenClaims{}
+	err := m.verifyJwt(accessToken, m.accessTokenSecret, &claims)
+	return claims, err
 }
 
-func (m *maker) generateJwt(claims jwtgo.MapClaims, exp time.Duration, secret string) (string, error) {
+func (m *maker) VerifyRefreshToken(refreshToken string) (RefreshTokenClaims, error) {
+	claims := RefreshTokenClaims{}
+	err := m.verifyJwt(refreshToken, m.refreshTokenSecret, &claims)
+	return claims, err
+}
+
+func (m *maker) generateJwt(claims Claims, exp time.Duration, secret string) (string, error) {
 	id, err := gonanoid.New()
 	if err != nil {
 		return "", err
@@ -56,16 +65,16 @@ func (m *maker) generateJwt(claims jwtgo.MapClaims, exp time.Duration, secret st
 
 	now := time.Now()
 
-	claims["id"] = id
-	claims["iat"] = now.Unix()
-	claims["exp"] = now.Add(exp).Unix()
+	claims.SetId(id)
+	claims.SetIssuedAt(now)
+	claims.SetExpiresAt(now.Add(exp))
 
 	token := jwtgo.NewWithClaims(jwtgo.SigningMethodHS256, claims)
 	return token.SignedString([]byte(secret))
 }
 
-func (m *maker) verifyJwt(token string, secret string) (jwtgo.MapClaims, error) {
-	t, err := jwtgo.Parse(token, func(t *jwtgo.Token) (interface{}, error) {
+func (m *maker) verifyJwt(token string, secret string, claims Claims) error {
+	t, err := jwtgo.ParseWithClaims(token, claims, func(t *jwtgo.Token) (interface{}, error) {
 		if _, ok := t.Method.(*jwtgo.SigningMethodHMAC); !ok {
 			return nil, errors.New("unexpected signing method")
 		}
@@ -73,11 +82,11 @@ func (m *maker) verifyJwt(token string, secret string) (jwtgo.MapClaims, error) 
 	})
 
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	if _, ok := t.Claims.(jwtgo.Claims); !ok && !t.Valid {
-		return nil, errors.New("token is invalid")
+	if _, ok := t.Claims.(Claims); !ok && !t.Valid {
+		return errors.New("token is invalid")
 	}
-	return t.Claims.(jwtgo.MapClaims), err
+	return nil
 }

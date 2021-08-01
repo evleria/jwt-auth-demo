@@ -16,6 +16,7 @@ type Auth interface {
 	Login(ctx context.Context, email, password string) (string, string, error)
 	Refresh(ctx context.Context, refreshToken string) (string, error)
 	Logout(ctx context.Context, refreshToken string) error
+	ValidateAccessToken(ctx context.Context, accessToken string) (*jwt.AccessTokenClaims, error)
 }
 
 type auth struct {
@@ -74,7 +75,7 @@ func (s *auth) Refresh(ctx context.Context, refreshToken string) (string, error)
 		return "", err
 	}
 
-	user, err := s.userRepository.GetUserById(userId)
+	user, err := s.userRepository.GetUserById(ctx, userId)
 	if err != nil {
 		return "", errors.New("cannot find user")
 	}
@@ -95,23 +96,51 @@ func (s *auth) Logout(ctx context.Context, refreshToken string) error {
 	return s.tokenRepository.Blacklist(ctx, userId, time.Now(), config.GetDuration("REFRESH_TOKEN_DURATION", time.Hour*24*7))
 }
 
+func (s *auth) ValidateAccessToken(ctx context.Context, accessToken string) (*jwt.AccessTokenClaims, error) {
+	claims, err := s.jwtMaker.VerifyAccessToken(accessToken)
+	if err != nil {
+		return nil, err
+	}
+
+	blacklisted, err := s.isBlacklisted(ctx, claims.UserId, claims.IssuedAt)
+	if err != nil {
+		return nil, err
+	}
+	if blacklisted {
+		return nil, errors.New("token is blacklisted")
+	}
+
+	return &claims, nil
+}
+
 func (s *auth) checkRefreshToken(ctx context.Context, refreshToken string) (int, error) {
 	claims, err := s.jwtMaker.VerifyRefreshToken(refreshToken)
 	if err != nil {
 		return 0, err
 	}
 
-	userId := int(claims["sub"].(float64))
-	t, inBlacklist, err := s.tokenRepository.IsBlacklisted(ctx, userId)
+	blacklisted, err := s.isBlacklisted(ctx, claims.UserId, claims.IssuedAt)
 	if err != nil {
 		return 0, err
 	}
-	if inBlacklist {
-		iat := time.Unix(int64(claims["iat"].(float64)), 0)
-		if t.After(iat) {
-			return 0, errors.New("token is blacklisted")
-		}
+	if blacklisted {
+		return 0, errors.New("token is blacklisted")
 	}
 
-	return userId, nil
+	return claims.UserId, nil
+}
+
+func (s *auth) isBlacklisted(ctx context.Context, userId int, issuedAt int64) (bool, error) {
+	t, inBlacklist, err := s.tokenRepository.IsBlacklisted(ctx, userId)
+	if err != nil {
+		return false, err
+	}
+
+	if inBlacklist {
+		iat := time.Unix(issuedAt, 0)
+		if t.After(iat) {
+			return true, nil
+		}
+	}
+	return false, nil
 }

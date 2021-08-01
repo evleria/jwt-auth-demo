@@ -24,6 +24,43 @@ var doc = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/user/me": {
+            "get": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "Shows information about current user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Authorization header",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.MeResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.DefaultHttpError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.DefaultHttpError"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/login": {
             "post": {
                 "tags": [
@@ -214,6 +251,23 @@ var doc = `{
             "type": "object",
             "properties": {
                 "refreshToken": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.MeResponse": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "firstName": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "lastName": {
                     "type": "string"
                 }
             }

@@ -4,38 +4,42 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"log"
+	"time"
+
+	"github.com/go-redis/redis/v8"
+	"github.com/jackc/pgx/v4"
+	"github.com/labstack/echo/v4"
+	echoMiddleware "github.com/labstack/echo/v4/middleware"
+	echoSwagger "github.com/swaggo/echo-swagger"
+
 	_ "github.com/evleria/jwt-auth-demo/docs"
 	"github.com/evleria/jwt-auth-demo/internal/config"
 	"github.com/evleria/jwt-auth-demo/internal/handler"
 	"github.com/evleria/jwt-auth-demo/internal/jwt"
+	"github.com/evleria/jwt-auth-demo/internal/middleware"
 	"github.com/evleria/jwt-auth-demo/internal/repository"
 	"github.com/evleria/jwt-auth-demo/internal/service"
-	"github.com/go-redis/redis/v8"
-	"github.com/jackc/pgx/v4"
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
-	echoSwagger "github.com/swaggo/echo-swagger"
-	"log"
 )
 
-var cfgPath string
-
-func initFlags() {
+func initFlags() string {
+	var cfgPath string
 	flag.StringVar(&cfgPath, "config", "./configs/.env", "The application configuration")
 	flag.Parse()
+	return cfgPath
 }
 
 // @title JWT Auth Demo Project
 func main() {
-	initFlags()
+	cfgPath := initFlags()
 
 	err := config.Load(cfgPath)
 	if err != nil {
 		log.Println(err)
 	}
 
-	dbUrl := getPostgresConnectionString()
-	db, err := pgx.Connect(context.Background(), dbUrl)
+	dbURL := getPostgresConnectionString()
+	db, err := pgx.Connect(context.Background(), dbURL)
 	check(err)
 
 	redisClient := redis.NewClient(&redis.Options{
@@ -57,15 +61,25 @@ func initRoutes(e *echo.Echo, db *pgx.Conn, redisClient *redis.Client) {
 	userRepository := repository.NewUserRepository(db)
 	tokenRepository := repository.NewTokenRepository(redisClient)
 	authService := service.NewAuthService(userRepository, tokenRepository, jwtMaker)
-	controller := handler.NewAuthHandler(authService)
+	authHandler := handler.NewAuthHandler(authService)
 
-	e.Use(middleware.Logger())
-	e.Use(middleware.Recover())
+	e.Use(echoMiddleware.Logger())
+	e.Use(echoMiddleware.TimeoutWithConfig(echoMiddleware.TimeoutConfig{Timeout: time.Second * 5}))
+	e.Use(echoMiddleware.Recover())
 
+	// Auth
 	authGroup := e.Group("/auth")
-	authGroup.POST("/register", controller.Register)
-	authGroup.POST("/login", controller.Login)
-	authGroup.POST("/refresh", controller.Refresh)
+	authGroup.POST("/register", authHandler.Register)
+	authGroup.POST("/login", authHandler.Login)
+	authGroup.POST("/refresh", authHandler.Refresh)
+	authGroup.POST("/logout", authHandler.Logout)
+
+	// User
+	userService := service.NewUserService(userRepository)
+	userHandler := handler.NewUserHandler(userService)
+	userGroup := e.Group("/api/user")
+	userGroup.Use(middleware.Jwt(authService))
+	userGroup.GET("/me", userHandler.Me)
 
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
 }

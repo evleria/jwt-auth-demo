@@ -1,37 +1,41 @@
+// Package repository encapsulates work with databases
 package repository
 
 import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/go-redis/redis/v8"
 	"strconv"
 	"time"
+
+	"github.com/go-redis/redis/v8"
 )
 
+// Token contains methods to work with token-related data
 type Token interface {
-	Blacklist(userId int, t time.Time, ttl time.Duration) error
-	IsBlacklisted(userId int) (time.Time, bool, error)
+	Blacklist(ctx context.Context, userID int, t time.Time, ttl time.Duration) error
+	IsBlacklisted(ctx context.Context, userID int) (time.Time, bool, error)
 }
 
 type token struct {
 	redis *redis.Client
 }
 
-func NewTokenRepository(redis *redis.Client) Token {
+// NewTokenRepository creates token repository
+func NewTokenRepository(redisClient *redis.Client) Token {
 	return &token{
-		redis: redis,
+		redis: redisClient,
 	}
 }
 
-func (r *token) Blacklist(userId int, t time.Time, ttl time.Duration) error {
-	key := getBlacklistKey(userId)
-	return r.redis.Set(context.TODO(), key, t, ttl).Err()
+func (r *token) Blacklist(ctx context.Context, userID int, t time.Time, ttl time.Duration) error {
+	key := getBlacklistKey(userID)
+	return r.redis.Set(ctx, key, t.UnixNano(), ttl).Err()
 }
 
-func (r *token) IsBlacklisted(userId int) (time.Time, bool, error) {
-	key := getBlacklistKey(userId)
-	s, err := r.redis.Get(context.TODO(), key).Result()
+func (r *token) IsBlacklisted(ctx context.Context, userID int) (time.Time, bool, error) {
+	key := getBlacklistKey(userID)
+	s, err := r.redis.Get(ctx, key).Result()
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
 			return time.Time{}, false, nil
@@ -49,6 +53,6 @@ func (r *token) IsBlacklisted(userId int) (time.Time, bool, error) {
 	return t, true, nil
 }
 
-func getBlacklistKey(userId int) string {
-	return fmt.Sprintf("blacklist::%d", userId)
+func getBlacklistKey(userID int) string {
+	return fmt.Sprintf("blacklist::%d", userID)
 }

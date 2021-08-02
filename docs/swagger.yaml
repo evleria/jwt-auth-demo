@@ -1,10 +1,10 @@
 definitions:
-  auth.DefaultHttpError:
+  handler.DefaultHTTPError:
     properties:
       message:
         type: string
     type: object
-  auth.LoginRequest:
+  handler.LoginRequest:
     properties:
       email:
         type: string
@@ -14,24 +14,40 @@ definitions:
     - email
     - password
     type: object
-  auth.LoginResponse:
+  handler.LoginResponse:
     properties:
       accessToken:
         type: string
       refreshToken:
         type: string
     type: object
-  auth.RefreshRequest:
+  handler.LogoutRequest:
     properties:
       refreshToken:
         type: string
     type: object
-  auth.RefreshResponse:
+  handler.MeResponse:
+    properties:
+      email:
+        type: string
+      firstName:
+        type: string
+      id:
+        type: integer
+      lastName:
+        type: string
+    type: object
+  handler.RefreshRequest:
+    properties:
+      refreshToken:
+        type: string
+    type: object
+  handler.RefreshResponse:
     properties:
       accessToken:
         type: string
     type: object
-  auth.RegisterRequest:
+  handler.RegisterRequest:
     properties:
       email:
         type: string
@@ -51,6 +67,30 @@ info:
   contact: {}
   title: JWT Auth Demo Project
 paths:
+  /api/user/me:
+    get:
+      parameters:
+      - description: Authorization header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.MeResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.DefaultHTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.DefaultHTTPError'
+      summary: Shows information about current user
+      tags:
+      - User
   /auth/login:
     post:
       parameters:
@@ -59,46 +99,69 @@ paths:
         name: loginData
         required: true
         schema:
-          $ref: '#/definitions/auth.LoginRequest'
+          $ref: '#/definitions/handler.LoginRequest'
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/auth.LoginResponse'
+            $ref: '#/definitions/handler.LoginResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/auth.DefaultHttpError'
+            $ref: '#/definitions/handler.DefaultHTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/auth.DefaultHttpError'
+            $ref: '#/definitions/handler.DefaultHTTPError'
       summary: Logins a user
+      tags:
+      - Auth
+  /auth/logout:
+    post:
+      parameters:
+      - description: Refresh token
+        in: body
+        name: logoutData
+        required: true
+        schema:
+          $ref: '#/definitions/handler.LogoutRequest'
+      responses:
+        "200":
+          description: Logged out
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.DefaultHTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.DefaultHTTPError'
+      summary: Logouts a user
       tags:
       - Auth
   /auth/refresh:
     post:
       parameters:
-      - description: Refresh information
+      - description: Refresh token
         in: body
         name: refreshData
         required: true
         schema:
-          $ref: '#/definitions/auth.RefreshRequest'
+          $ref: '#/definitions/handler.RefreshRequest'
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/auth.RefreshResponse'
+            $ref: '#/definitions/handler.RefreshResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/auth.DefaultHttpError'
+            $ref: '#/definitions/handler.DefaultHTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/auth.DefaultHttpError'
-      summary: Refresh a user
+            $ref: '#/definitions/handler.DefaultHTTPError'
+      summary: Refreshes access token
       tags:
       - Auth
   /auth/register:
@@ -109,18 +172,18 @@ paths:
         name: registerData
         required: true
         schema:
-          $ref: '#/definitions/auth.RegisterRequest'
+          $ref: '#/definitions/handler.RegisterRequest'
       responses:
         "201":
           description: Created
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/auth.DefaultHttpError'
+            $ref: '#/definitions/handler.DefaultHTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/auth.DefaultHttpError'
+            $ref: '#/definitions/handler.DefaultHTTPError'
       summary: Registers a new user
       tags:
       - Auth

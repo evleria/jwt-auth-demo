@@ -1,12 +1,15 @@
 package handler
 
 import (
+	"net/http"
+
+	"github.com/labstack/echo/v4"
+
 	"github.com/evleria/jwt-auth-demo/internal/jwt"
 	"github.com/evleria/jwt-auth-demo/internal/service"
-	"github.com/labstack/echo/v4"
-	"net/http"
 )
 
+// User contains method of current user
 type User interface {
 	Me(context echo.Context) error
 }
@@ -15,6 +18,7 @@ type user struct {
 	userService service.User
 }
 
+// NewUserHandler creates user handler
 func NewUserHandler(userService service.User) User {
 	return &user{
 		userService: userService,
@@ -26,19 +30,19 @@ func NewUserHandler(userService service.User) User {
 // @Summary Shows information about current user
 // @Param Authorization header string true "Authorization header"
 // @Success 200 {object} MeResponse
-// @Failure 400 {object} DefaultHttpError
-// @Failure 500 {object} DefaultHttpError
+// @Failure 400 {object} DefaultHTTPError
+// @Failure 500 {object} DefaultHTTPError
 // @Router /api/user/me [get]
 func (u *user) Me(ctx echo.Context) error {
 	claims := ctx.Get("user").(*jwt.AccessTokenClaims)
 
-	user, err := u.userService.Me(ctx.Request().Context(), claims.UserId)
+	user, err := u.userService.Me(ctx.Request().Context(), claims.UserID)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
 	response := MeResponse{
-		Id:        user.Id,
+		ID:        user.ID,
 		FirstName: user.FirstName,
 		LastName:  user.LastName,
 		Email:     user.Email,
@@ -46,8 +50,9 @@ func (u *user) Me(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, response)
 }
 
+// MeResponse contains information of response
 type MeResponse struct {
-	Id        int    `json:"id"`
+	ID        int    `json:"id"`
 	FirstName string `json:"firstName"`
 	LastName  string `json:"lastName"`
 	Email     string `json:"email"`

@@ -1,5 +1,5 @@
 definitions:
-  handler.DefaultHttpError:
+  handler.DefaultHTTPError:
     properties:
       message:
         type: string
@@ -83,11 +83,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.DefaultHttpError'
+            $ref: '#/definitions/handler.DefaultHTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.DefaultHttpError'
+            $ref: '#/definitions/handler.DefaultHTTPError'
       summary: Shows information about current user
       tags:
       - User
@@ -108,11 +108,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.DefaultHttpError'
+            $ref: '#/definitions/handler.DefaultHTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.DefaultHttpError'
+            $ref: '#/definitions/handler.DefaultHTTPError'
       summary: Logins a user
       tags:
       - Auth
@@ -131,11 +131,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.DefaultHttpError'
+            $ref: '#/definitions/handler.DefaultHTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.DefaultHttpError'
+            $ref: '#/definitions/handler.DefaultHTTPError'
       summary: Logouts a user
       tags:
       - Auth
@@ -156,11 +156,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.DefaultHttpError'
+            $ref: '#/definitions/handler.DefaultHTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.DefaultHttpError'
+            $ref: '#/definitions/handler.DefaultHTTPError'
       summary: Refreshes access token
       tags:
       - Auth
@@ -179,11 +179,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.DefaultHttpError'
+            $ref: '#/definitions/handler.DefaultHTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.DefaultHttpError'
+            $ref: '#/definitions/handler.DefaultHTTPError'
       summary: Registers a new user
       tags:
       - Auth

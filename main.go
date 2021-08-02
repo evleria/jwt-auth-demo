@@ -4,6 +4,15 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"log"
+	"time"
+
+	"github.com/go-redis/redis/v8"
+	"github.com/jackc/pgx/v4"
+	"github.com/labstack/echo/v4"
+	echoMiddleware "github.com/labstack/echo/v4/middleware"
+	echoSwagger "github.com/swaggo/echo-swagger"
+
 	_ "github.com/evleria/jwt-auth-demo/docs"
 	"github.com/evleria/jwt-auth-demo/internal/config"
 	"github.com/evleria/jwt-auth-demo/internal/handler"
@@ -11,33 +20,26 @@ import (
 	"github.com/evleria/jwt-auth-demo/internal/middleware"
 	"github.com/evleria/jwt-auth-demo/internal/repository"
 	"github.com/evleria/jwt-auth-demo/internal/service"
-	"github.com/go-redis/redis/v8"
-	"github.com/jackc/pgx/v4"
-	"github.com/labstack/echo/v4"
-	echoMiddleware "github.com/labstack/echo/v4/middleware"
-	echoSwagger "github.com/swaggo/echo-swagger"
-	"log"
-	"time"
 )
 
-var cfgPath string
-
-func initFlags() {
+func initFlags() string {
+	var cfgPath string
 	flag.StringVar(&cfgPath, "config", "./configs/.env", "The application configuration")
 	flag.Parse()
+	return cfgPath
 }
 
 // @title JWT Auth Demo Project
 func main() {
-	initFlags()
+	cfgPath := initFlags()
 
 	err := config.Load(cfgPath)
 	if err != nil {
 		log.Println(err)
 	}
 
-	dbUrl := getPostgresConnectionString()
-	db, err := pgx.Connect(context.Background(), dbUrl)
+	dbURL := getPostgresConnectionString()
+	db, err := pgx.Connect(context.Background(), dbURL)
 	check(err)
 
 	redisClient := redis.NewClient(&redis.Options{

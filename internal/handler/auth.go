@@ -1,14 +1,18 @@
+// Package handler encapsulates work with HTTP
 package handler
 
 import (
 	"fmt"
-	"github.com/evleria/jwt-auth-demo/internal/service"
-	"github.com/labstack/echo/v4"
-	"gopkg.in/go-playground/validator.v9"
 	"net/http"
 	"strings"
+
+	"github.com/labstack/echo/v4"
+	"gopkg.in/go-playground/validator.v9"
+
+	"github.com/evleria/jwt-auth-demo/internal/service"
 )
 
+// Auth contains http handlers for each endpoint in auth group
 type Auth interface {
 	Register(context echo.Context) error
 	Login(context echo.Context) error
@@ -21,10 +25,11 @@ type auth struct {
 	service  service.Auth
 }
 
-func NewAuthHandler(service service.Auth) Auth {
+// NewAuthHandler creates auth handler
+func NewAuthHandler(svc service.Auth) Auth {
 	return &auth{
 		validate: validator.New(),
-		service:  service,
+		service:  svc,
 	}
 }
 
@@ -33,8 +38,8 @@ func NewAuthHandler(service service.Auth) Auth {
 // @Summary Registers a new user
 // @Param registerData body RegisterRequest true "Registration information"
 // @Success 201 "Created"
-// @Failure 400 {object} DefaultHttpError
-// @Failure 500 {object} DefaultHttpError
+// @Failure 400 {object} DefaultHTTPError
+// @Failure 500 {object} DefaultHTTPError
 // @Router /auth/register [post]
 func (c *auth) Register(ctx echo.Context) error {
 	request := new(RegisterRequest)
@@ -60,8 +65,8 @@ func (c *auth) Register(ctx echo.Context) error {
 // @Summary Logins a user
 // @Param loginData body LoginRequest true "Login information"
 // @Success 200 {object} LoginResponse
-// @Failure 400 {object} DefaultHttpError
-// @Failure 500 {object} DefaultHttpError
+// @Failure 400 {object} DefaultHTTPError
+// @Failure 500 {object} DefaultHTTPError
 // @Router /auth/login [post]
 func (c *auth) Login(ctx echo.Context) error {
 	request := new(LoginRequest)
@@ -91,8 +96,8 @@ func (c *auth) Login(ctx echo.Context) error {
 // @Summary Refreshes access token
 // @Param refreshData body RefreshRequest true "Refresh token"
 // @Success 200 {object} RefreshResponse
-// @Failure 400 {object} DefaultHttpError
-// @Failure 500 {object} DefaultHttpError
+// @Failure 400 {object} DefaultHTTPError
+// @Failure 500 {object} DefaultHTTPError
 // @Router /auth/refresh [post]
 func (c *auth) Refresh(ctx echo.Context) error {
 	request := new(RefreshRequest)
@@ -117,8 +122,8 @@ func (c *auth) Refresh(ctx echo.Context) error {
 // @Summary Logouts a user
 // @Param logoutData body LogoutRequest true "Refresh token"
 // @Success 200 "Logged out"
-// @Failure 400 {object} DefaultHttpError
-// @Failure 500 {object} DefaultHttpError
+// @Failure 400 {object} DefaultHTTPError
+// @Failure 500 {object} DefaultHTTPError
 // @Router /auth/logout [post]
 func (c *auth) Logout(ctx echo.Context) error {
 	request := new(LogoutRequest)
@@ -147,10 +152,12 @@ func (c *auth) Validate(input interface{}) error {
 	return nil
 }
 
-type DefaultHttpError struct {
+// DefaultHTTPError represents default http error
+type DefaultHTTPError struct {
 	Message string `json:"message"`
 }
 
+// RegisterRequest represents request of register endpoint
 type RegisterRequest struct {
 	FirstName string `json:"firstName" validate:"required,min=2,max=20"`
 	LastName  string `json:"lastName" validate:"required,min=2,max=20"`
@@ -158,24 +165,29 @@ type RegisterRequest struct {
 	Password  string `json:"password" validate:"required,min=8,max=30"`
 }
 
+// LoginRequest represents request of login endpoint
 type LoginRequest struct {
 	Email    string `json:"email" validate:"required,email"`
 	Password string `json:"password" validate:"required,min=8,max=30"`
 }
 
+// LoginResponse represents response of login endpoint
 type LoginResponse struct {
 	AccessToken  string `json:"accessToken"`
 	RefreshToken string `json:"refreshToken"`
 }
 
+// RefreshRequest represents request of refresh endpoint
 type RefreshRequest struct {
 	RefreshToken string `json:"refreshToken"`
 }
 
+// RefreshResponse represents response of refresh endpoint
 type RefreshResponse struct {
 	AccessToken string `json:"accessToken"`
 }
 
+// LogoutRequest represents request of logout endpoint
 type LogoutRequest struct {
 	RefreshToken string `json:"refreshToken"`
 }

@@ -2,16 +2,18 @@ package jwt
 
 import (
 	"errors"
-	"github.com/evleria/jwt-auth-demo/internal/config"
 	"time"
+
+	"github.com/evleria/jwt-auth-demo/internal/config"
 
 	jwtgo "github.com/dgrijalva/jwt-go"
 	gonanoid "github.com/matoous/go-nanoid/v2"
 )
 
+// Maker contains methods for generate JWT
 type Maker interface {
-	GenerateAccessToken(userId int, email string) (string, error)
-	GenerateRefreshToken(userId int) (string, error)
+	GenerateAccessToken(userID int, email string) (string, error)
+	GenerateRefreshToken(userID int) (string, error)
 	VerifyAccessToken(accessToken string) (AccessTokenClaims, error)
 	VerifyRefreshToken(refreshToken string) (RefreshTokenClaims, error)
 }
@@ -23,6 +25,7 @@ type maker struct {
 	refreshTokenDuration time.Duration
 }
 
+// NewJwtMakerFromConfig creates Maker with predefined config values
 func NewJwtMakerFromConfig() Maker {
 	return &maker{
 		accessTokenSecret:    config.GetString("ACCESS_TOKEN_SECRET", "access_secret"),
@@ -32,16 +35,18 @@ func NewJwtMakerFromConfig() Maker {
 	}
 }
 
-func (m *maker) GenerateAccessToken(userId int, email string) (string, error) {
+// GenerateAccessToken generates access token
+func (m *maker) GenerateAccessToken(userID int, email string) (string, error) {
 	return m.generateJwt(&AccessTokenClaims{
-		UserId: userId,
+		UserID: userID,
 		Email:  email,
 	}, m.accessTokenDuration, m.accessTokenSecret)
 }
 
-func (m *maker) GenerateRefreshToken(userId int) (string, error) {
+// GenerateRefreshToken generates refresh token
+func (m *maker) GenerateRefreshToken(userID int) (string, error) {
 	return m.generateJwt(&RefreshTokenClaims{
-		UserId: userId,
+		UserID: userID,
 	}, m.refreshTokenDuration, m.refreshTokenSecret)
 }
 
@@ -65,7 +70,7 @@ func (m *maker) generateJwt(claims Claims, exp time.Duration, secret string) (st
 
 	now := time.Now()
 
-	claims.SetId(id)
+	claims.SetID(id)
 	claims.SetIssuedAt(now)
 	claims.SetExpiresAt(now.Add(exp))
 
@@ -73,7 +78,7 @@ func (m *maker) generateJwt(claims Claims, exp time.Duration, secret string) (st
 	return token.SignedString([]byte(secret))
 }
 
-func (m *maker) verifyJwt(token string, secret string, claims Claims) error {
+func (m *maker) verifyJwt(token, secret string, claims Claims) error {
 	t, err := jwtgo.ParseWithClaims(token, claims, func(t *jwtgo.Token) (interface{}, error) {
 		if _, ok := t.Method.(*jwtgo.SigningMethodHMAC); !ok {
 			return nil, errors.New("unexpected signing method")

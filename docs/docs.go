@@ -49,13 +49,13 @@ var doc = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/handler.DefaultHttpError"
+                            "$ref": "#/definitions/handler.DefaultHTTPError"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/handler.DefaultHttpError"
+                            "$ref": "#/definitions/handler.DefaultHTTPError"
                         }
                     }
                 }
@@ -88,13 +88,13 @@ var doc = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/handler.DefaultHttpError"
+                            "$ref": "#/definitions/handler.DefaultHTTPError"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/handler.DefaultHttpError"
+                            "$ref": "#/definitions/handler.DefaultHTTPError"
                         }
                     }
                 }
@@ -124,13 +124,13 @@ var doc = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/handler.DefaultHttpError"
+                            "$ref": "#/definitions/handler.DefaultHTTPError"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/handler.DefaultHttpError"
+                            "$ref": "#/definitions/handler.DefaultHTTPError"
                         }
                     }
                 }
@@ -163,13 +163,13 @@ var doc = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/handler.DefaultHttpError"
+                            "$ref": "#/definitions/handler.DefaultHTTPError"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/handler.DefaultHttpError"
+                            "$ref": "#/definitions/handler.DefaultHTTPError"
                         }
                     }
                 }
@@ -199,13 +199,13 @@ var doc = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/handler.DefaultHttpError"
+                            "$ref": "#/definitions/handler.DefaultHTTPError"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/handler.DefaultHttpError"
+                            "$ref": "#/definitions/handler.DefaultHTTPError"
                         }
                     }
                 }
@@ -213,7 +213,7 @@ var doc = `{
         }
     },
     "definitions": {
-        "handler.DefaultHttpError": {
+        "handler.DefaultHTTPError": {
             "type": "object",
             "properties": {
                 "message": {
